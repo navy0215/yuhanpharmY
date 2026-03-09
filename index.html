@@ -1,0 +1,2467 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>?좏븳??CS ?곷떞 移몃컲蹂대뱶 v8.17</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0f4fa;color:#1e2a44;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+
+/* ?? HEADER ?? */
+.hdr{background:linear-gradient(135deg,#001f5a,#003087);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0;}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand h1{font-size:15px;font-weight:700;color:#fff;}
+.brand span{font-size:10px;color:rgba(255,255,255,0.5);}
+.hstats{display:flex;gap:6px;}
+.sc{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:3px 10px;font-size:11px;color:#fff;display:flex;align-items:center;gap:4px;}
+.sc .dot{width:6px;height:6px;border-radius:50%;}
+.hbtns{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+.btn-new{background:linear-gradient(135deg,#3b8fe8,#0055bb);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.btn-io{background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.25);border-radius:7px;padding:6px 11px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s;}
+.btn-io:hover{background:rgba(255,255,255,0.22);}
+.btn-save{background:rgba(16,185,129,0.25);border-color:rgba(16,185,129,0.5);}
+.btn-save:hover{background:rgba(16,185,129,0.4);}
+.btn-stat{background:rgba(168,85,247,0.25);border-color:rgba(168,85,247,0.5);}
+.btn-stat:hover{background:rgba(168,85,247,0.4);}
+.datebox{display:flex;flex-direction:row;align-items:center;gap:6px;}
+.datebox .ddate{font-size:13px;font-weight:700;color:#fff;}
+.datebox .dday{font-size:12px;color:rgba(255,255,255,0.6);font-weight:500;}
+
+.btn-filter{background:rgba(251,146,60,0.22);border-color:rgba(251,146,60,0.55);}
+.btn-filter:hover{background:rgba(251,146,60,0.38);}
+.btn-filter.active{background:rgba(251,146,60,0.55);border-color:rgba(251,146,60,0.9);box-shadow:0 0 0 2px rgba(251,146,60,0.3);}
+
+/* ?? 湲곌컙 ?꾪꽣 紐⑤떖 ?? */
+.date-modal{background:#fff;border-radius:16px;width:440px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.22);overflow:hidden;}
+.date-hd{background:linear-gradient(135deg,#001f5a,#003087);padding:18px 20px;position:relative;}
+.date-hd h3{font-size:15px;font-weight:700;color:#fff;margin-bottom:3px;}
+.date-hd p{font-size:12px;color:rgba(255,255,255,0.65);}
+.date-cl{position:absolute;top:14px;right:16px;background:rgba(255,255,255,0.15);border:none;color:#fff;width:26px;height:26px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.date-cl:hover{background:rgba(255,255,255,0.28);}
+.date-bd{padding:18px 20px;}
+.date-preset{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+.dps{padding:5px 11px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #e2e8f5;color:#5a6a88;transition:all .15s;background:#f8fafc;}
+.dps:hover{border-color:#003087;color:#003087;background:#e8f0fb;}
+.dps.on{background:#003087;border-color:#003087;color:#fff;}
+.date-range{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.date-range label{font-size:12px;font-weight:600;color:#5a6a88;width:30px;flex-shrink:0;}
+.date-range input{flex:1;padding:7px 10px;border:1.5px solid #e2e8f5;border-radius:8px;font-size:13px;outline:none;font-family:inherit;color:#1e2a44;}
+.date-range input:focus{border-color:#003087;}
+.date-sep{color:#94a3c0;font-weight:600;}
+.date-badge{background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:8px 12px;font-size:12px;color:#92400e;margin-bottom:14px;display:none;}
+.date-badge.show{display:block;}
+.date-ft{display:flex;gap:8px;justify-content:flex-end;}
+.date-reset{padding:8px 16px;border:1.5px solid #e2e8f5;border-radius:8px;background:#fff;font-size:13px;font-weight:600;color:#5a6a88;cursor:pointer;}
+.date-reset:hover{border-color:#ef4444;color:#ef4444;}
+.date-apply{padding:8px 20px;border:none;border-radius:8px;background:linear-gradient(135deg,#003087,#0055bb);color:#fff;font-size:13px;font-weight:700;cursor:pointer;}
+.date-apply:hover{opacity:.9;}
+
+/* ?? NAV ?? */
+.nav{background:#0a1f4e;display:flex;overflow-x:auto;flex-shrink:0;border-top:1px solid rgba(255,255,255,0.08);}
+.nav::-webkit-scrollbar{height:0;}
+.ntab{padding:9px 13px;font-size:11.5px;color:rgba(255,255,255,0.82);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;font-weight:600;letter-spacing:0.2px;transition:color .15s,border-color .15s,background .15s;}
+.ntab:hover{color:#fff;background:rgba(255,255,255,0.08);border-bottom-color:#5aabff;}
+
+/* ?? LAYOUT ?? */
+.body{display:flex;flex:1;overflow:hidden;}
+.sb{width:260px;flex-shrink:0;background:#fff;border-right:1px solid #e2e8f5;overflow-y:auto;position:relative;padding-bottom:24px;}
+.sb::-webkit-scrollbar{width:3px;}
+.sb::-webkit-scrollbar-thumb{background:#e2e8f5;}
+.sbs{padding:11px 13px;border-bottom:1px solid #f0f4fa;}
+.sbt{font-size:10px;font-weight:700;color:#94a3c0;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.sin{width:100%;padding:7px 9px;border:1px solid #e2e8f5;border-radius:7px;font-size:12px;outline:none;background:#f0f4fa;font-family:inherit;}
+.search-wrap{position:relative;}.search-wrap .sin{padding-right:28px;}
+.search-clear{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:18px;height:18px;border:none;background:#cbd5e1;color:#fff;border-radius:50%;cursor:pointer;font-size:11px;line-height:18px;text-align:center;display:none;padding:0;}
+.search-clear:hover{background:#94a3b8;}
+.sb-update{position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:10px;color:#b0b8c4;pointer-events:none;}
+.sin:focus{border-color:#0066CC;background:#fff;}
+.fcs{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.fc{padding:3px 8px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid;transition:all .15s;font-family:inherit;}
+.fc-all{color:#003087;border-color:#003087;}.fc-all.on{background:#003087;color:#fff;}
+.fc-ord{color:#1d4ed8;border-color:#3b82f6;}.fc-ord.on{background:#2563eb;border-color:#2563eb;color:#fff;}
+.fc-pro{color:#6d28d9;border-color:#8b5cf6;}.fc-pro.on{background:#7c3aed;border-color:#7c3aed;color:#fff;}
+.fc-mem{color:#065f46;border-color:#10b981;}.fc-mem.on{background:#059669;border-color:#059669;color:#fff;}
+.fc-prm{color:#92400e;border-color:#f59e0b;}.fc-prm.on{background:#d97706;border-color:#d97706;color:#fff;}
+.fc-etc{color:#5a6a88;border-color:#94a3c0;}.fc-etc.on{background:#5a6a88;border-color:#5a6a88;color:#fff;}
+.pr{display:flex;align-items:center;justify-content:space-between;padding:5px 8px;border-radius:7px;font-size:12px;margin-bottom:3px;}
+.pr .pl{display:flex;align-items:center;gap:5px;font-weight:500;}
+.pr .pn{font-size:13px;font-weight:700;}
+.pu{background:#fee2e2;color:#ef4444;}.ph{background:#fef3c7;color:#f59e0b;}.pn2{background:#e8f0fb;color:#0066CC;}
+.ri{display:flex;align-items:flex-start;gap:7px;padding:7px 8px;border-radius:7px;cursor:pointer;margin-bottom:1px;}
+.ri:hover{background:#e8f0fb;}
+.ric{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+.rit strong{display:block;font-size:11px;font-weight:600;color:#1e2a44;}
+.rit span{font-size:10px;color:#5a6a88;line-height:1.3;}
+
+/* ?? BOARD ?? */
+.board{flex:1;overflow-x:auto;overflow-y:hidden;padding:12px;display:flex;gap:10px;align-items:flex-start;}
+.board::-webkit-scrollbar{height:5px;}
+.board::-webkit-scrollbar-thumb{background:#e2e8f5;border-radius:4px;}
+.col{width:258px;flex-shrink:0;display:flex;flex-direction:column;max-height:calc(100vh - 116px);border-radius:13px;overflow:hidden;border:1px solid #e2e8f5;background:#f0f4fa;}
+.col-hd{padding:10px 12px 9px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid rgba(0,0,0,0.05);}
+.col-ti{display:flex;align-items:center;gap:7px;}
+.col-ic{width:27px;height:27px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.col-nm{font-size:13px;font-weight:700;color:#1e2a44;}
+.col-ct{font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px;}
+.col-bd{flex:1;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:5px;}
+.col-bd::-webkit-scrollbar{width:3px;}
+.col-bd::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.1);}
+.cn .col-hd{background:linear-gradient(135deg,#dbeafe,#eff6ff);}
+.cn .col-ic{background:#bfdbfe;}.cn .col-ct{background:#bfdbfe;color:#1d4ed8;}.cn .col-bd{background:#f8fbff;}
+.cp .col-hd{background:linear-gradient(135deg,#fef3c7,#fffbeb);}
+.cp .col-ic{background:#fde68a;}.cp .col-ct{background:#fde68a;color:#92400e;}.cp .col-bd{background:#fffdf5;}
+.ce .col-hd{background:linear-gradient(135deg,#fee2e2,#fff5f5);}
+.ce .col-ic{background:#fecaca;}.ce .col-ct{background:#fecaca;color:#991b1b;}.ce .col-bd{background:#fff8f8;}
+.cd .col-hd{background:linear-gradient(135deg,#d1fae5,#f0fdf4);}
+.cd .col-ic{background:#a7f3d0;}.cd .col-ct{background:#a7f3d0;color:#065f46;}.cd .col-bd{background:#f8fffb;}
+.col.dov .col-bd{outline:2px dashed #3b8fe8;outline-offset:-3px;background:rgba(59,143,232,0.06)!important;}
+.abtn{margin:0 6px 6px;padding:8px;border:1.5px dashed #94a3c0;border-radius:7px;background:transparent;color:#5a6a88;font-size:12px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:5px;font-family:inherit;}
+.abtn:hover{border-color:#0066CC;color:#0066CC;background:#e8f0fb;}
+
+/* ?? CARD ?? */
+.card{background:#fff;border-radius:10px;padding:10px 11px;box-shadow:0 1px 3px rgba(0,48,135,0.08);cursor:grab;border:1px solid rgba(0,0,0,0.04);transition:transform .15s,box-shadow .15s,opacity .15s;user-select:none;position:relative;border-left:3px solid transparent;}
+.card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,48,135,0.12);}
+.card.drg{opacity:.3;cursor:grabbing;}
+.kpu{border-left-color:#ef4444;}.kph{border-left-color:#f59e0b;}.kpn{border-left-color:#0066CC;}
+.ct{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:5px;gap:4px;}
+.cid{font-size:10px;color:#94a3c0;font-weight:600;}
+.bgs{display:flex;gap:3px;flex-wrap:wrap;}
+.b{padding:1px 5px;border-radius:20px;font-size:10px;font-weight:600;}
+.bo{background:#dbeafe;color:#1d4ed8;}.bp{background:#ede9fe;color:#6d28d9;}
+.bm{background:#d1fae5;color:#065f46;}.br{background:#fef3c7;color:#92400e;}
+.be{background:#e2e8f5;color:#5a6a88;}.bu2{background:#fee2e2;color:#991b1b;}
+.bch-phone{background:#fce7f3;color:#be185d;}.bch-site{background:#dbeafe;color:#1e40af;}.bch-etc{background:#f3f4f6;color:#6b7280;}
+.bh{background:#fef3c7;color:#92400e;}.bn{background:#eff6ff;color:#1d4ed8;}
+.ctit{font-size:12px;font-weight:600;color:#1e2a44;line-height:1.4;margin-bottom:4px;}
+.cds{font-size:11px;color:#5a6a88;line-height:1.5;margin-bottom:5px;}
+.cf{display:flex;align-items:center;justify-content:space-between;padding-top:5px;border-top:1px solid #f0f4fa;}
+.cw{display:flex;align-items:center;gap:4px;font-size:11px;color:#5a6a88;}
+.av{width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;}
+.card-meta{display:flex;align-items:center;gap:5px;margin-top:4px;font-size:10px;color:#94a3c0;}
+.log-cnt{display:inline-flex;align-items:center;gap:2px;cursor:pointer;padding:1px 5px;border-radius:10px;background:#e8f0fb;color:#0066CC;font-weight:600;}
+.log-cnt:hover{background:#bfdbfe;}
+.cas{display:none;position:absolute;top:7px;right:7px;gap:3px;}
+.card:hover .cas{display:flex;}
+.ca{width:21px;height:21px;border-radius:5px;border:none;background:#f0f4fa;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;color:#5a6a88;}
+.ca:hover{background:#e8f0fb;color:#0066CC;}.ca.dl:hover{background:#fee2e2;color:#ef4444;}
+.emp{padding:18px;text-align:center;color:#94a3c0;font-size:11px;}
+
+/* ?? MODAL (移대뱶 ?깅줉/?섏젙) ?? */
+.ov{position:fixed;inset:0;background:rgba(0,31,90,0.5);backdrop-filter:blur(5px);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.ov.open{opacity:1;pointer-events:all;}
+.modal{background:#fff;border-radius:15px;width:500px;max-width:95vw;max-height:90vh;overflow-y:auto;padding:22px;box-shadow:0 10px 40px rgba(0,48,135,0.2);transform:scale(.94);transition:transform .25s cubic-bezier(0.34,1.56,0.64,1);}
+.ov.open .modal{transform:scale(1);}
+.mttl{font-size:15px;font-weight:700;color:#003087;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.fi{display:flex;flex-direction:column;gap:4px;}.fi.full{grid-column:1/-1;}
+.fl{font-size:10px;font-weight:700;color:#5a6a88;letter-spacing:.5px;text-transform:uppercase;}
+.fin{padding:7px 9px;border:1.5px solid #e2e8f5;border-radius:7px;font-size:12px;font-family:inherit;outline:none;transition:border-color .2s;color:#1e2a44;}
+.fin:focus{border-color:#0066CC;}
+.ta{resize:vertical;min-height:65px;}
+.mb{display:flex;gap:7px;margin-top:16px;justify-content:flex-end;}
+.bc{padding:7px 16px;border-radius:7px;border:1.5px solid #e2e8f5;background:#fff;font-size:12px;cursor:pointer;font-family:inherit;color:#5a6a88;}
+.bs{padding:7px 20px;border-radius:7px;border:none;background:linear-gradient(135deg,#3b8fe8,#003087);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+
+/* ?? PANEL (留ㅻ돱?? ?? */
+.panel{position:fixed;top:0;right:0;width:350px;height:100vh;background:#fff;box-shadow:-6px 0 30px rgba(0,31,90,0.14);z-index:200;transform:translateX(100%);transition:transform .3s ease;display:flex;flex-direction:column;overflow:hidden;}
+.panel.open{transform:translateX(0);}
+.phd{padding:15px 17px 11px;background:linear-gradient(135deg,#001f5a,#003087);color:#fff;flex-shrink:0;position:relative;}
+.phd h3{font-size:14px;font-weight:700;margin-bottom:2px;}
+.phd p{font-size:11px;color:rgba(255,255,255,0.5);}
+.pcl{position:absolute;top:11px;right:11px;width:27px;height:27px;border-radius:7px;border:none;background:rgba(255,255,255,0.15);color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.pcl:hover{background:rgba(255,255,255,0.25);}
+.pbd{flex:1;overflow-y:auto;padding:13px 15px;}
+.pbd::-webkit-scrollbar{width:3px;}.pbd::-webkit-scrollbar-thumb{background:#e2e8f5;}
+.pst{font-size:12px;font-weight:700;color:#003087;margin:11px 0 7px;padding-bottom:4px;border-bottom:2px solid #d0e2f8;}
+.pst:first-child{margin-top:0;}
+.psc{font-size:11px;line-height:1.7;color:#5a6a88;}
+.psc strong{color:#1e2a44;}
+.ps{display:flex;gap:7px;margin-bottom:6px;align-items:flex-start;}
+.sn{width:18px;height:18px;border-radius:50%;background:#003087;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px;}
+.nb{padding:7px 10px;border-radius:6px;margin:5px 0;font-size:11px;line-height:1.6;}
+.ni{background:#e8f0fb;border-left:3px solid #0066CC;color:#1e40af;}
+.nw{background:#fef3c7;border-left:3px solid #f59e0b;color:#92400e;}
+.nd{background:#fee2e2;border-left:3px solid #ef4444;color:#991b1b;}
+
+/* ?? CONFIRM ?? */
+.cfm{position:fixed;inset:0;background:rgba(0,31,90,0.45);backdrop-filter:blur(4px);z-index:1100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.cfm.open{opacity:1;pointer-events:all;}
+.cfmi{background:#fff;border-radius:12px;padding:20px 24px;width:300px;box-shadow:0 10px 40px rgba(0,48,135,0.2);text-align:center;}
+.cfmi p{font-size:13px;color:#1e2a44;margin-bottom:14px;line-height:1.5;}
+.cbtns{display:flex;gap:8px;justify-content:center;}
+.bno{padding:7px 16px;border-radius:7px;border:1.5px solid #e2e8f5;background:#fff;font-size:12px;cursor:pointer;font-family:inherit;}
+.bys{padding:7px 16px;border-radius:7px;border:none;background:#ef4444;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+
+/* ?? TOAST ?? */
+.tsts{position:fixed;bottom:16px;right:16px;display:flex;flex-direction:column;gap:5px;z-index:2000;}
+.tst{padding:9px 14px;border-radius:9px;background:#1e2a44;color:#fff;font-size:12px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,0.2);display:flex;align-items:center;gap:6px;transform:translateX(120%);transition:transform .3s cubic-bezier(0.34,1.56,0.64,1);}
+.tst.show{transform:translateX(0);}
+.tst.ok{background:#10b981;}.tst.err{background:#ef4444;}
+
+/* ?? SLA 諛곗? ?? */
+.sla-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;margin-left:6px;vertical-align:middle;}
+.sla-over{background:#fee2e2;color:#dc2626;}
+.sla-warn{background:#fef3c7;color:#d97706;}
+.sla-ok{background:#dcfce7;color:#16a34a;}
+.elapsed-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;background:#ede9fe;color:#7c3aed;margin-left:6px;vertical-align:middle;}
+
+/* ?? ?뺣젹 ?쒕∼ ?몃뵒耳?댄꽣 ?? */
+.drop-above{border-top:3px solid #3b8fe8 !important;margin-top:-1px;}
+
+/* ?? 泥섎━ ?대젰 紐⑤떖 ?? */
+.log-modal{background:#fff;border-radius:15px;width:520px;max-width:95vw;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,48,135,0.2);transform:scale(.94);transition:transform .25s cubic-bezier(0.34,1.56,0.64,1);}
+.ov.open .log-modal{transform:scale(1);}
+.log-hd{padding:16px 18px 12px;background:linear-gradient(135deg,#001f5a,#003087);border-radius:15px 15px 0 0;position:relative;}
+.log-hd h3{font-size:14px;font-weight:700;color:#fff;}
+.log-hd p{font-size:11px;color:rgba(255,255,255,0.55);margin-top:2px;}
+.log-cl{position:absolute;top:12px;right:12px;width:27px;height:27px;border-radius:7px;border:none;background:rgba(255,255,255,0.15);color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.log-cl:hover{background:rgba(255,255,255,0.25);}
+.log-bd{flex:1;overflow-y:auto;padding:14px 16px;}
+.log-bd::-webkit-scrollbar{width:3px;}.log-bd::-webkit-scrollbar-thumb{background:#e2e8f5;}
+.log-item{display:flex;gap:10px;margin-bottom:14px;}
+.log-line{display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;}
+.log-dot{width:10px;height:10px;border-radius:50%;background:#003087;flex-shrink:0;}
+.log-vl{width:2px;flex:1;background:#e2e8f5;min-height:20px;}
+.log-content{flex:1;background:#f8fbff;border:1px solid #e2e8f5;border-radius:8px;padding:9px 11px;}
+.log-meta{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap;}
+.log-who{font-size:11px;font-weight:700;color:#003087;}
+.log-time{font-size:10px;color:#94a3c0;}
+.log-stage{font-size:10px;padding:1px 6px;border-radius:20px;background:#e8f0fb;color:#1d4ed8;font-weight:600;}
+.log-txt{font-size:12px;color:#1e2a44;line-height:1.5;}
+.log-ft{padding:12px 16px;border-top:1px solid #f0f4fa;display:flex;flex-direction:column;gap:7px;}
+.log-row{display:flex;gap:7px;}
+.log-in{flex:1;padding:7px 9px;border:1.5px solid #e2e8f5;border-radius:7px;font-size:12px;font-family:inherit;outline:none;}
+.log-in:focus{border-color:#0066CC;}
+.log-add{padding:7px 14px;border-radius:7px;border:none;background:linear-gradient(135deg,#3b8fe8,#003087);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.tpl-row{display:flex;flex-wrap:wrap;gap:4px;}
+.tpl-chip{padding:3px 8px;border-radius:20px;font-size:11px;cursor:pointer;background:#e8f0fb;color:#003087;border:1px solid #bfdbfe;transition:all .15s;font-family:inherit;}
+.tpl-chip:hover{background:#003087;color:#fff;}
+.log-empty{text-align:center;padding:20px;color:#94a3c0;font-size:12px;}
+
+/* ?? ?듦퀎 ??쒕낫??紐⑤떖 ?? */
+.stat-modal{background:#fff;border-radius:15px;width:680px;max-width:96vw;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,48,135,0.2);transform:scale(.94);transition:transform .25s cubic-bezier(0.34,1.56,0.64,1);}
+.ov.open .stat-modal{transform:scale(1);}
+.stat-hd{padding:16px 20px 12px;background:linear-gradient(135deg,#001f5a,#003087);border-radius:15px 15px 0 0;position:relative;display:flex;align-items:center;gap:10px;}
+.stat-hd h3{font-size:15px;font-weight:700;color:#fff;}
+.stat-hd p{font-size:11px;color:rgba(255,255,255,0.55);margin-top:1px;}
+.stat-cl{position:absolute;top:12px;right:12px;width:27px;height:27px;border-radius:7px;border:none;background:rgba(255,255,255,0.15);color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.stat-cl:hover{background:rgba(255,255,255,0.25);}
+.stat-bd{flex:1;overflow-y:auto;padding:18px 20px;}
+.stat-bd::-webkit-scrollbar{width:3px;}.stat-bd::-webkit-scrollbar-thumb{background:#e2e8f5;}
+.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:16px;}
+.stat-card{background:#f8fbff;border:1px solid #e2e8f5;border-radius:10px;padding:13px;text-align:center;}
+.stat-card .sv{font-size:26px;font-weight:700;color:#003087;}
+.stat-card .sl{font-size:11px;color:#5a6a88;margin-top:3px;}
+.stat-sec{margin-bottom:18px;}
+.stat-title{font-size:12px;font-weight:700;color:#003087;margin-bottom:10px;padding-bottom:5px;border-bottom:2px solid #d0e2f8;}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.bar-lbl{width:70px;font-size:11px;color:#5a6a88;flex-shrink:0;text-align:right;}
+.bar-wrap{flex:1;background:#f0f4fa;border-radius:20px;height:14px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:20px;transition:width .5s ease;}
+.bar-val{width:30px;font-size:11px;font-weight:700;color:#1e2a44;flex-shrink:0;}
+.stage-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.stage-item{background:#f8fbff;border:1px solid #e2e8f5;border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;}
+.stage-nm{font-size:11px;font-weight:600;color:#1e2a44;}
+.stage-v{font-size:16px;font-weight:700;}
+.who-list{display:flex;flex-direction:column;gap:5px;}
+.who-row{display:flex;align-items:center;gap:8px;}
+.who-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
+.who-nm{font-size:11px;font-weight:600;color:#1e2a44;width:60px;}
+.who-br{flex:1;background:#f0f4fa;border-radius:20px;height:12px;overflow:hidden;}
+.who-bf{height:100%;background:linear-gradient(90deg,#3b8fe8,#003087);border-radius:20px;transition:width .5s;}
+.who-cnt{font-size:11px;font-weight:700;color:#003087;width:25px;text-align:right;}
+
+/* ?? 湲고븳 珥덇낵 ?뚮┝ ?앹뾽 ?? */
+.over-cl:hover{background:rgba(255,255,255,0.35);}
+
+/* ?? ?꾩뭅?대툕 紐⑤떖 ?? */
+.arc-modal{background:#fff;border-radius:15px;width:660px;max-width:96vw;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,48,135,0.2);transform:scale(.94);transition:transform .25s cubic-bezier(0.34,1.56,0.64,1);}
+.ov.open .arc-modal{transform:scale(1);}
+.arc-hd{padding:16px 18px 12px;background:linear-gradient(135deg,#374151,#6b7280);border-radius:15px 15px 0 0;display:flex;align-items:flex-start;justify-content:space-between;}
+.arc-hd h3{font-size:14px;font-weight:700;color:#fff;}
+.arc-hd p{font-size:11px;color:rgba(255,255,255,0.65);margin-top:2px;}
+.arc-cl{width:27px;height:27px;border-radius:7px;border:none;background:rgba(255,255,255,0.15);color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.arc-cl:hover{background:rgba(255,255,255,0.3);}
+.arc-search{display:flex;gap:8px;padding:12px 16px 8px;border-bottom:1px solid #f0f4fa;}
+.arc-sin{flex:1;padding:7px 12px;border-radius:8px;border:1.5px solid #e2e8f5;font-size:12px;font-family:inherit;outline:none;}
+.arc-sin:focus{border-color:#6b7280;}
+.arc-xl{padding:7px 14px;border-radius:8px;border:1.5px solid rgba(16,185,129,0.4);background:rgba(16,185,129,0.1);color:#065f46;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.arc-xl:hover{background:rgba(16,185,129,0.2);}
+.arc-bd{flex:1;overflow-y:auto;padding:12px 16px;}
+.arc-bd::-webkit-scrollbar{width:3px;}.arc-bd::-webkit-scrollbar-thumb{background:#e2e8f5;}
+.arc-row{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:9px;background:#f8fbff;border:1px solid #e2e8f5;margin-bottom:7px;}
+.arc-row:hover{background:#f0f4fa;}
+.arc-info{flex:1;min-width:0;}
+.arc-co{font-size:12px;font-weight:700;color:#1e2a44;}
+.arc-cc{font-size:10px;color:#94a3c0;font-weight:600;margin-left:5px;}
+.arc-ti{font-size:11px;color:#5a6a88;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.arc-meta{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;}
+.arc-date{font-size:10px;color:#94a3c0;}
+.arc-restore{padding:4px 10px;border-radius:7px;border:1.5px solid #3b8fe8;background:#e8f0fb;color:#0066CC;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
+.arc-restore:hover{background:#0066CC;color:#fff;}
+.arc-del{padding:4px 10px;border-radius:7px;border:1.5px solid #fecaca;background:#fff5f5;color:#ef4444;font-size:11px;cursor:pointer;font-family:inherit;flex-shrink:0;}
+.arc-del:hover{background:#ef4444;color:#fff;}
+.arc-empty{text-align:center;padding:40px 0;color:#94a3c0;font-size:13px;}
+
+/* ?? 紐⑤뱶 ??(CS / 嫄댁쓽) ?? */
+.mode-tabs{display:flex;gap:4px;background:rgba(0,0,0,0.18);border-radius:9px;padding:3px;flex-shrink:0;}
+.mtab{padding:5px 14px;border-radius:7px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.6);cursor:pointer;transition:all .18s;white-space:nowrap;}
+.mtab.on{background:#fff;color:#003087;box-shadow:0 1px 4px rgba(0,0,0,0.15);}
+.mtab:not(.on):hover{color:#fff;background:rgba(255,255,255,0.15);}
+
+/* ?? 嫄댁쓽 移몃컲 ???됱긽 ?? */
+.col.csu .col-hd{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-bottom:2px solid #86efac;}
+.col.csr .col-hd{background:linear-gradient(135deg,#fffbeb,#fef3c7);border-bottom:2px solid #fcd34d;}
+.col.csh .col-hd{background:linear-gradient(135deg,#eff6ff,#dbeafe);border-bottom:2px solid #93c5fd;}
+.col.csp .col-hd{background:linear-gradient(135deg,#f0f4fa,#e2e8f5);border-bottom:2px solid #94a3b8;}
+/* 嫄댁쓽 移대뱶 ?뚮몢由?*/
+.kgu{border-left:3px solid #ef4444 !important;}
+.kgs{border-left:3px solid #10b981 !important;}
+.kgr{border-left:3px solid #f59e0b !important;}
+.kgn{border-left:3px solid #3b8fe8 !important;}
+/* 嫄댁쓽 諛곗? */
+.bg-sys{background:#dcfce7;color:#166534;}
+.bg-ops{background:#fef3c7;color:#92400e;}
+.bg-env{background:#dbeafe;color:#1e40af;}
+.bg-etc2{background:#f3f4f6;color:#374151;}
+/* 嫄댁쓽 ?곗꽑?쒖쐞 諛곗? */
+.bg-hi{background:#fee2e2;color:#991b1b;}
+.bg-md{background:#fef3c7;color:#92400e;}
+.bg-lo{background:#dcfce7;color:#166534;}
+
+/* ?? 嫄댁쓽 ?ъ씠?쒕컮 ?? */
+.sb-suggest{display:none;}
+.sb-suggest.on{display:block;}
+.sb-cs{display:block;}
+.sb-cs.off{display:none;}
+
+/* ?? 鍮좊Ⅸ ?듬? ?쒗뵆由?愿由?紐⑤떖 ?? */
+.tpl-modal{background:#fff;border-radius:15px;width:520px;max-width:95vw;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,48,135,0.2);transform:scale(.94);transition:transform .25s cubic-bezier(0.34,1.56,0.64,1);}
+.ov.open .tpl-modal{transform:scale(1);}
+.tpl-hd{padding:16px 18px 12px;background:linear-gradient(135deg,#1e3a5f,#0066CC);border-radius:15px 15px 0 0;position:relative;}
+.tpl-hd h3{font-size:14px;font-weight:700;color:#fff;}
+.tpl-hd p{font-size:11px;color:rgba(255,255,255,0.55);}
+.tpl-cl{position:absolute;top:12px;right:12px;width:27px;height:27px;border-radius:7px;border:none;background:rgba(255,255,255,0.15);color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.tpl-cl:hover{background:rgba(255,255,255,0.25);}
+.tpl-bd{flex:1;overflow-y:auto;padding:14px 16px;}
+.tpl-bd::-webkit-scrollbar{width:3px;}.tpl-bd::-webkit-scrollbar-thumb{background:#e2e8f5;}
+.tpl-list-item{display:flex;align-items:flex-start;gap:8px;padding:9px 11px;border-radius:8px;background:#f8fbff;border:1px solid #e2e8f5;margin-bottom:7px;}
+.tpl-list-cat{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#e8f0fb;color:#0066CC;flex-shrink:0;margin-top:1px;}
+.tpl-list-txt{flex:1;font-size:12px;color:#1e2a44;line-height:1.5;}
+.tpl-list-btns{display:flex;gap:4px;flex-shrink:0;}
+.tpl-cp{padding:3px 8px;border-radius:6px;border:none;background:#e8f0fb;color:#0066CC;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;}
+.tpl-cp:hover{background:#0066CC;color:#fff;}
+.tpl-rm{padding:3px 8px;border-radius:6px;border:none;background:#fee2e2;color:#ef4444;font-size:11px;cursor:pointer;font-family:inherit;}
+.tpl-rm:hover{background:#ef4444;color:#fff;}
+.tpl-add-area{border-top:1px solid #f0f4fa;padding:12px 16px;background:#fff;}
+.tpl-add-row{display:flex;gap:7px;align-items:flex-start;}
+.tpl-add-in{flex:1;padding:7px 9px;border:1.5px solid #e2e8f5;border-radius:7px;font-size:12px;font-family:inherit;outline:none;resize:vertical;min-height:60px;}
+.tpl-add-in:focus{border-color:#0066CC;}
+.tpl-add-r{display:flex;flex-direction:column;gap:5px;width:100px;}
+.tpl-cat-sel{padding:6px 7px;border:1.5px solid #e2e8f5;border-radius:7px;font-size:11px;font-family:inherit;outline:none;}
+.tpl-add-btn{padding:7px;border-radius:7px;border:none;background:linear-gradient(135deg,#3b8fe8,#003087);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="brand">
+    <span style="font-size:20px" id="brandIco">?뭻</span>
+    <div><h1 id="brandTitle">?좏븳??CS ?곷떞 愿由?/h1><span id="brandSub">YUHAN PHARM CUSTOMER SERVICE BOARD</span></div>
+  </div>
+  <div class="mode-tabs">
+    <div class="mtab on" id="mtab-cs" data-mode="cs">?룯 CS ?곷떞</div>
+    <div class="mtab" id="mtab-sg" data-mode="sg">?뮕 吏곸썝 嫄댁쓽</div>
+  </div>
+  <div class="hstats" id="hstats"></div>
+  <div class="hbtns" id="hbtns-cs">
+    <button class="btn-io btn-stat" id="btnStat" title="?듦퀎 ??쒕낫??>?뱤 ?듦퀎</button>
+    <button class="btn-io btn-filter" id="btnDateFilter" title="湲곌컙 ?꾪꽣">?뱟 湲곌컙 ?꾪꽣</button>
+    <button class="btn-io" id="btnArchive" title="?꾩뭅?대툕 蹂닿린" style="background:rgba(107,114,128,0.2);border-color:rgba(107,114,128,0.4);">?뾼 ?꾩뭅?대툕 <span id="arc-cnt" style="background:#6b7280;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:2px;">0</span></button>
+    <button class="btn-io" id="btnLoad" title="JSON ?뚯씪?먯꽌 遺덈윭?ㅺ린">?뱛 遺덈윭?ㅺ린</button>
+    <button class="btn-io btn-save" id="btnExport" title="JSON ?뚯씪濡????>?뮶 ???/button>
+    <button class="btn-io" id="btnXlsx" title="?묒?濡??대낫?닿린" style="background:rgba(16,185,129,0.2);border-color:rgba(16,185,129,0.5);">?뱫 ?묒?</button>
+    <button class="btn-io" id="btnTpl" title="鍮좊Ⅸ ?듬? ?쒗뵆由?愿由? style="background:rgba(59,130,246,0.2);border-color:rgba(59,130,246,0.5);">?됵툘 ?쒗뵆由?/button>
+    <button class="btn-new" id="btnNew">+ ???곷떞 ?깅줉</button>
+  </div>
+  <div class="hbtns" id="hbtns-sg" style="display:none;">
+    <button class="btn-io btn-filter" id="btnSgDateFilter" title="湲곌컙 ?꾪꽣">?뱟 湲곌컙 ?꾪꽣</button>
+    <button class="btn-io" id="btnSgArcView" title="嫄댁쓽 ?꾩뭅?대툕" style="background:rgba(107,114,128,0.2);border-color:rgba(107,114,128,0.4);">?뾼 ?꾩뭅?대툕 <span id="sg-arc-cnt" style="background:#6b7280;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:2px;">0</span></button>
+    <button class="btn-io btn-save" id="btnSgExport" title="JSON ???>?뮶 ???/button>
+    <button class="btn-io" id="btnSgXlsx" title="?묒? ?대낫?닿린" style="background:rgba(16,185,129,0.2);border-color:rgba(16,185,129,0.5);">?뱫 ?묒?</button>
+    <button class="btn-new" id="btnSgNew" style="background:linear-gradient(135deg,#10b981,#065f46);">+ ??嫄댁쓽 ?깅줉</button>
+  </div>
+  <input type="file" id="fileInput" accept=".json" style="display:none">
+</header>
+<nav class="nav" id="nav">
+  <div class="ntab" data-panel="login">?뵎 ?뚯썝媛??濡쒓렇??/div>
+  <div class="ntab" data-panel="order">?벀 二쇰Ц/痍⑥냼/?ш껐??/div>
+  <div class="ntab" data-panel="ret">?봽 諛섑뭹 泥섎━</div>
+  <div class="ntab" data-panel="product">?뭻 ?곹뭹 誘몃끂異?/div>
+  <div class="ntab" data-panel="promo">?럞 湲고쉷???⑹궛?좎씤</div>
+  <div class="ntab" data-panel="esc">?슚 ?먯뒪而щ젅?댁뀡</div>
+  <div class="ntab" data-panel="img">?뼹 ?대?吏 洹쒓꺽</div>
+  <div class="datebox" id="datebox" style="margin-left:auto;padding-right:16px;white-space:nowrap;"></div>
+</nav>
+<div class="body">
+  <!-- ?? CS ?ъ씠?쒕컮 ?? -->
+  <aside class="sb sb-cs" id="sb-cs">
+    <div class="sbs">
+      <div class="sbt">寃??/ ?꾪꽣</div>
+      <div class="search-wrap"><input class="sin" id="q" placeholder="嫄곕옒泥섎챸, ?쒕ぉ 寃??.."><button class="search-clear" data-for="q">&times;</button></div>
+      <div class="fcs">
+        <div class="fc fc-all on" data-f="all">?꾩껜</div>
+        <div class="fc fc-ord" data-f="ord">二쇰Ц/諛섑뭹</div>
+        <div class="fc fc-pro" data-f="pro">?곹뭹</div>
+        <div class="fc fc-mem" data-f="mem">?뚯썝</div>
+        <div class="fc fc-prm" data-f="prm">?꾨줈紐⑥뀡</div>
+        <div class="fc fc-etc" data-f="etc">湲고?</div>
+      </div>
+      <div style="margin-top:8px;">
+        <div class="sbt">?뺣젹</div>
+        <select class="sin" id="sortMode" style="font-size:12px;font-weight:600;cursor:pointer;">
+          <option value="priority">?뵶 ?곗꽑?쒖쐞??/option>
+          <option value="newest">?뱟 理쒖떊 ?묒닔??/option>
+          <option value="oldest">?뱟 ?ㅻ옒???묒닔??/option>
+          <option value="manual">???섎룞 ?뺣젹</option>
+        </select>
+      </div>
+    </div>
+    <div class="sbs">
+      <div class="sbt">?곗꽑?쒖쐞 ?꾪솴</div>
+      <div id="pcnt"></div>
+    </div>
+    <div class="sbs">
+      <div class="sbt">?뱰 CS 留ㅻ돱??諛붾줈媛湲?/div>
+      <div class="ri" data-panel="login"><div class="ric" style="background:#dbeafe">?뵎</div><div class="rit"><strong>?뚯썝媛??/ 濡쒓렇??/strong><span>5?④퀎 ?뱀씤 ?덉감 쨌 濡쒓렇??遺덇?</span></div></div>
+      <div class="ri" data-panel="order"><div class="ric" style="background:#fef3c7">?벀</div><div class="rit"><strong>二쇰Ц 쨌 痍⑥냼 쨌 ?ш껐??/strong><span>寃곗젣?꾨즺 痍⑥냼 쨌 ?쒕떖 ?대궡 ?ш껐??/span></div></div>
+      <div class="ri" data-panel="ret"><div class="ric" style="background:#ede9fe">?봽</div><div class="rit"><strong>諛섑뭹 泥섎━ ?먮쫫</strong><span>諛섑뭹 寃??쨌 ?섍툒???뺤씤</span></div></div>
+      <div class="ri" data-panel="product"><div class="ric" style="background:#d1fae5">?뭻</div><div class="rit"><strong>?곹뭹 誘몃끂異?泥댄겕</strong><span>?먮ℓ以묒? 쨌 ?꾩떆?몄텧 쨌 ??ℓ??/span></div></div>
+      <div class="ri" data-panel="promo"><div class="ric" style="background:#fef3c7">?럞</div><div class="rit"><strong>湲고쉷??/ ?⑹궛?좎씤</strong><span>ERP ?먮룞?곕룞 쨌 ?붾떒??媛깆떊</span></div></div>
+      <div class="ri" data-panel="esc"><div class="ric" style="background:#fee2e2">?슚</div><div class="rit"><strong>?먯뒪而щ젅?댁뀡 湲곗?</strong><span>?댁쨷泥?뎄 쨌 媛쒖씤?뺣낫?좎텧</span></div></div>
+    </div>
+    <div class="sb-update" id="sb-cs-update"></div>
+  </aside>
+  <!-- ?? 嫄댁쓽 ?ъ씠?쒕컮 ?? -->
+  <aside class="sb" id="sb-sg" style="display:none;">
+    <div class="sbs">
+      <div class="sbt">寃??/ ?꾪꽣</div>
+      <div class="search-wrap"><input class="sin" id="sg-q" placeholder="吏곸썝紐? ?쒕ぉ, 蹂몃Ц 寃??.."><button class="search-clear" data-for="sg-q">&times;</button></div>
+      <div class="fcs">
+        <div class="fc fc-all on" data-sg="all">?꾩껜</div>
+        <div class="fc" style="background:#dcfce7;color:#166534;border-color:#86efac;" data-sg="sys">?쒖뒪??/div>
+        <div class="fc" style="background:#fef3c7;color:#92400e;border-color:#fcd34d;" data-sg="ops">?낅Т</div>
+        <div class="fc" style="background:#dbeafe;color:#1e40af;border-color:#93c5fd;" data-sg="env">?섍꼍</div>
+        <div class="fc fc-etc" data-sg="etc">湲고?</div>
+      </div>
+    </div>
+    <div class="sbs">
+      <div class="sbt">嫄댁쓽 ?꾪솴</div>
+      <div id="sg-pcnt"></div>
+    </div>
+    <div class="sbs">
+      <div class="sbt">?뮕 嫄댁쓽 泥섎━ ?④퀎 ?덈궡</div>
+      <div style="background:#f0fdf4;border-left:3px solid #10b981;border-radius:0 7px 7px 0;padding:8px 10px;margin-bottom:6px;font-size:11px;color:#166534;"><strong>?뱿 ?묒닔</strong> ??嫄댁쓽 ?댁슜 ?뺤씤 ??/div>
+      <div style="background:#fffbeb;border-left:3px solid #f59e0b;border-radius:0 7px 7px 0;padding:8px 10px;margin-bottom:6px;font-size:11px;color:#92400e;"><strong>?뵇 寃??以?/strong> ???대떦??寃??吏꾪뻾</div>
+      <div style="background:#f3f4f6;border-left:3px solid #94a3b8;border-radius:0 7px 7px 0;padding:8px 10px;margin-bottom:6px;font-size:11px;color:#374151;"><strong>??蹂대쪟</strong> ??蹂대쪟 ?먮뒗 誘몃컲??/div>
+      <div style="background:#dbeafe;border-left:3px solid #3b8fe8;border-radius:0 7px 7px 0;padding:8px 10px;font-size:11px;color:#1e40af;"><strong>??諛섏쁺</strong> ??諛섏쁺 寃곗젙 ???꾩뭅?대툕</div>
+    </div>
+    <div class="sb-update" id="sb-sg-update"></div>
+  </aside>
+  <!-- ?? CS 蹂대뱶 ?? -->
+  <main class="board" id="board-cs">
+    <div class="col cn" id="col-new">
+      <div class="col-hd"><div class="col-ti"><div class="col-ic">?뱿</div><div class="col-nm">?묒닔 ?꾨즺</div></div><span class="col-ct" id="ct-new">0</span></div>
+      <div class="col-bd" id="bd-new"></div>
+      <button class="abtn" data-col="new">+ 移대뱶 異붽?</button>
+    </div>
+    <div class="col cp" id="col-prog">
+      <div class="col-hd"><div class="col-ti"><div class="col-ic">?숋툘</div><div class="col-nm">泥섎━ 以?/div></div><span class="col-ct" id="ct-prog">0</span></div>
+      <div class="col-bd" id="bd-prog"></div>
+      <button class="abtn" data-col="prog">+ 移대뱶 異붽?</button>
+    </div>
+    <div class="col ce" id="col-esc2">
+      <div class="col-hd"><div class="col-ti"><div class="col-ic">?슚</div><div class="col-nm">?먯뒪而щ젅?댁뀡</div></div><span class="col-ct" id="ct-esc2">0</span></div>
+      <div class="col-bd" id="bd-esc2"></div>
+      <button class="abtn" data-col="esc2">+ 移대뱶 異붽?</button>
+    </div>
+    <div class="col cd" id="col-done">
+      <div class="col-hd"><div class="col-ti"><div class="col-ic">??/div><div class="col-nm">泥섎━ ?꾨즺</div></div><span class="col-ct" id="ct-done">0</span></div>
+      <div class="col-bd" id="bd-done"></div>
+      <button class="abtn" data-col="done" style="background:rgba(107,114,128,0.12);color:#6b7280;border-color:rgba(107,114,128,0.3);" id="btnArchiveAll" title="泥섎━ ?꾨즺 移대뱶瑜?紐⑤몢 ?꾩뭅?대툕濡??대룞">?뾼 ?꾩껜 ?꾩뭅?대툕</button>
+    </div>
+  </main>
+  <!-- ?? 嫄댁쓽 蹂대뱶 ?? -->
+  <main class="board" id="board-sg" style="display:none;">
+    <div class="col csu" id="sg-col-new">
+      <div class="col-hd"><div class="col-ti"><div class="col-ic">?뱿</div><div class="col-nm">?묒닔</div></div><span class="col-ct" id="sg-ct-new">0</span></div>
+      <div class="col-bd" id="sg-bd-new"></div>
+      <button class="abtn sg-abtn" data-sgcol="new">+ 嫄댁쓽 異붽?</button>
+    </div>
+    <div class="col csr" id="sg-col-review">
+      <div class="col-hd"><div class="col-ti"><div class="col-ic">?뵇</div><div class="col-nm">寃??以?/div></div><span class="col-ct" id="sg-ct-review">0</span></div>
+      <div class="col-bd" id="sg-bd-review"></div>
+      <button class="abtn sg-abtn" data-sgcol="review">+ 嫄댁쓽 異붽?</button>
+    </div>
+    <div class="col csp" id="sg-col-hold">
+      <div class="col-hd"><div class="col-ti"><div class="col-ic">??/div><div class="col-nm">蹂대쪟</div></div><span class="col-ct" id="sg-ct-hold">0</span></div>
+      <div class="col-bd" id="sg-bd-hold"></div>
+      <button class="abtn sg-abtn" data-sgcol="hold">+ 嫄댁쓽 異붽?</button>
+    </div>
+    <div class="col csh" id="sg-col-accept">
+      <div class="col-hd"><div class="col-ti"><div class="col-ic">??/div><div class="col-nm">諛섏쁺</div></div><span class="col-ct" id="sg-ct-accept">0</span></div>
+      <div class="col-bd" id="sg-bd-accept"></div>
+      <button class="abtn sg-abtn" data-sgcol="accept" style="background:rgba(16,185,129,0.12);color:#065f46;border-color:rgba(16,185,129,0.4);" id="btnSgArchiveAll">?뾼 ?꾩껜 ?꾩뭅?대툕</button>
+    </div>
+  </main>
+</div>
+
+<!-- ?꾩뭅?대툕 紐⑤떖 -->
+<div class="ov" id="ov-arc">
+  <div class="arc-modal">
+    <div class="arc-hd">
+      <div>
+        <h3>?뾼 ?꾩뭅?대툕</h3>
+        <p id="arc-sub">泥섎━ ?꾨즺 ??蹂닿????곷떞 ?댁뿭</p>
+      </div>
+      <button class="arc-cl" id="btnArcCl">??/button>
+    </div>
+    <div class="arc-search">
+      <input class="arc-sin" id="arc-q" placeholder="嫄곕옒泥섎챸, 嫄곕옒泥섏퐫?? ?쒕ぉ 寃??..">
+      <button class="arc-xl" id="btnArcXlsx" title="?꾩뭅?대툕 ?묒? ?대낫?닿린">?뱫 ?묒?</button>
+    </div>
+    <div class="arc-bd" id="arc-bd"></div>
+  </div>
+</div>
+
+<!-- 嫄댁쓽 ?꾩뭅?대툕 紐⑤떖 -->
+<div class="ov" id="ov-sg-arc">
+  <div class="arc-modal">
+    <div class="arc-hd" style="background:linear-gradient(135deg,#374151,#10b981);">
+      <div>
+        <h3>?뾼 嫄댁쓽 ?꾩뭅?대툕</h3>
+        <p id="sg-arc-sub">蹂대쪟/諛섏쁺 ??蹂닿???嫄댁쓽 ?댁뿭</p>
+      </div>
+      <button class="arc-cl" id="btnSgArcCl">??/button>
+    </div>
+    <div class="arc-search">
+      <input class="arc-sin" id="sg-arc-q" placeholder="吏곸썝紐? ?곸뾽?紐? ?쒕ぉ 寃??..">
+      <button class="arc-xl" id="btnSgArcXlsx">?뱫 ?묒?</button>
+    </div>
+    <div class="arc-bd" id="sg-arc-bd"></div>
+  </div>
+</div>
+
+<!-- 嫄댁쓽 ?깅줉/?섏젙 紐⑤떖 -->
+<div class="ov" id="ov-sg">
+  <div class="modal">
+    <div class="mttl"><span id="sg-mico">?뮕</span><span id="sg-mttl">??嫄댁쓽 ?깅줉</span></div>
+    <div class="fg">
+      <div class="fi"><label class="fl">吏곸썝紐?*</label><input class="fin" id="sg-name" placeholder="?? ?띻만??></div>
+      <div class="fi"><label class="fl">?곸뾽?紐?<span style="font-size:10px;color:#94a3c0;">(?좏깮)</span></label><input class="fin" id="sg-dept" placeholder="?? ?곸뾽1?"></div>
+      <div class="fi"><label class="fl">嫄댁쓽 移댄뀒怨좊━</label>
+        <select class="fin" id="sg-cat">
+          <option value="sys">?뼢 ?쒖뒪??/option>
+          <option value="ops">?뱥 ?낅Т</option>
+          <option value="env">?룫 ?섍꼍</option>
+          <option value="etc">?뱦 湲고?</option>
+        </select>
+      </div>
+      <div class="fi full"><label class="fl">嫄댁쓽 ?쒕ぉ *</label><input class="fin" id="sg-tit" placeholder="嫄댁쓽 ?쒕ぉ???낅젰?섏꽭??></div>
+      <div class="fi full"><label class="fl">?곸꽭 ?댁슜</label><textarea class="fin ta" id="sg-desc" placeholder="援ъ껜?곸씤 ?댁슜, 媛쒖꽑 諛⑺뼢 ??></textarea></div>
+      <div class="fi"><label class="fl">以묒슂??/label>
+        <select class="fin" id="sg-pri">
+          <option value="hi">?뵶 ?믪쓬</option>
+          <option value="md">?윞 蹂댄넻</option>
+          <option value="lo" selected>?윟 ??쓬</option>
+        </select>
+      </div>
+      <div class="fi"><label class="fl">?④퀎</label>
+        <select class="fin" id="sg-st">
+          <option value="new">?묒닔</option>
+          <option value="review">寃??以?/option>
+          <option value="accept">諛섏쁺</option>
+          <option value="hold">蹂대쪟</option>
+        </select>
+      </div>
+    </div>
+    <div class="mb">
+      <button class="bc" id="btnSgCnl">痍⑥냼</button>
+      <button class="bs" id="btnSgSav" style="background:linear-gradient(135deg,#10b981,#065f46);">???/button>
+    </div>
+  </div>
+</div>
+
+<!-- 移대뱶 ?깅줉/?섏젙 紐⑤떖 -->
+<div class="ov" id="ov">
+  <div class="modal">
+    <div class="mttl"><span id="mico">?뱥</span><span id="mttl">???곷떞 移대뱶 ?깅줉</span></div>
+    <div class="fg">
+      <div class="fi"><label class="fl">嫄곕옒泥섎챸 *</label><input class="fin" id="fc" placeholder="?? ?뗢뿃?쎄뎅"></div>
+      <div class="fi"><label class="fl">嫄곕옒泥섏퐫??/label><input class="fin" id="fcc" placeholder="?? 123456"></div>
+      <div class="fi"><label class="fl">臾몄쓽 ?좏삎</label>
+        <select class="fin" id="ftype">
+          <option value="ord">二쇰Ц/諛섑뭹</option><option value="pro">?곹뭹</option>
+          <option value="mem">?뚯썝</option><option value="prm">?꾨줈紐⑥뀡</option><option value="etc">湲고?</option>
+        </select>
+      </div>
+      <div class="fi"><label class="fl">?묒닔 梨꾨꼸</label>
+        <select class="fin" id="fch">
+          <option value="phone">?뱸 ?꾪솕</option><option value="site">?뙋 ?좏븳??/option><option value="chEtc">?뱥 湲고?</option>
+        </select>
+      </div>
+      <div class="fi full"><label class="fl">?곷떞 ?쒕ぉ *</label><input class="fin" id="ftit" placeholder="?곷떞 ?쒕ぉ???낅젰?섏꽭??></div>
+      <div class="fi full"><label class="fl">?곸꽭 ?댁슜</label><textarea class="fin ta" id="fdesc" placeholder="二쇰Ц踰덊샇, 利앹긽 ???곸꽭 ?댁슜"></textarea></div>
+      <div class="fi"><label class="fl">?곗꽑?쒖쐞</label>
+        <select class="fin" id="fpri">
+          <option value="u">?뵶 湲닿툒</option><option value="h">?윞 ?믪쓬</option><option value="n" selected>?뵷 蹂댄넻</option>
+        </select>
+      </div>
+      <div class="fi"><label class="fl">泥섎━ 湲고븳</label>
+        <input class="fin" id="fdl" type="date">
+      </div>
+      <div class="fi"><label class="fl">?④퀎</label>
+        <select class="fin" id="fst">
+          <option value="new">?묒닔 ?꾨즺</option><option value="prog">泥섎━ 以?/option>
+          <option value="esc2">?먯뒪而щ젅?댁뀡</option><option value="done">泥섎━ ?꾨즺</option>
+        </select>
+      </div>
+    </div>
+    <div class="mb">
+      <button class="bc" id="btnCnl">痍⑥냼</button>
+      <button class="bs" id="btnSav">???/button>
+    </div>
+  </div>
+</div>
+
+<!-- 泥섎━ ?대젰 紐⑤떖 -->
+<div class="ov" id="ov-log">
+  <div class="log-modal">
+    <div class="log-hd">
+      <h3 id="log-ttl">泥섎━ ?대젰</h3>
+      <p id="log-sub">?곷떞 泥섎━ ?댁뿭 諛?肄붾찘??/p>
+      <button class="log-cl" id="btnLogCl">??/button>
+    </div>
+    <div class="log-bd" id="log-bd"></div>
+    <div class="log-ft">
+      <div style="font-size:11px;color:#5a6a88;font-weight:600;margin-bottom:4px">?뱷 鍮좊Ⅸ ?듬? ?쒗뵆由?/div>
+      <div class="tpl-row" id="tpl-chips"></div>
+      <div class="log-row" style="margin-top:7px">
+        <input class="log-in" id="log-who-in" placeholder="?대떦?먮챸" style="width:90px;flex:none;">
+        <input class="log-in" id="log-txt-in" placeholder="泥섎━ ?댁슜 ?낅젰...">
+        <button class="log-add" id="btnLogAdd">異붽?</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 嫄댁쓽 湲곌컙 ?꾪꽣 紐⑤떖 -->
+<div class="ov" id="ov-sg-date">
+  <div class="date-modal">
+    <div class="date-hd">
+      <h3>?뱟 湲곌컙 ?꾪꽣 ?ㅼ젙</h3>
+      <p>?묒닔??湲곗??쇰줈 嫄댁쓽 紐⑸줉???꾪꽣留곹빀?덈떎</p>
+      <button class="date-cl" id="btnSgDateCl">??/button>
+    </div>
+    <div class="date-bd">
+      <div style="font-size:11px;font-weight:700;color:#94a3c0;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">鍮좊Ⅸ ?좏깮</div>
+      <div class="date-preset">
+        <div class="dps" data-sgpreset="today">?ㅻ뒛</div>
+        <div class="dps" data-sgpreset="week">?대쾲 二?/div>
+        <div class="dps" data-sgpreset="month">?대쾲 ??/div>
+        <div class="dps" data-sgpreset="last7">理쒓렐 7??/div>
+        <div class="dps" data-sgpreset="last30">理쒓렐 30??/div>
+        <div class="dps" data-sgpreset="last90">理쒓렐 3媛쒖썡</div>
+      </div>
+
+
+      <div style="font-size:11px;font-weight:700;color:#94a3c0;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">吏곸젒 ?낅젰</div>
+      <div class="date-range">
+        <label>?쒖옉</label>
+        <input type="date" id="sg-date-from">
+        <span class="date-sep">~</span>
+        <label>醫낅즺</label>
+        <input type="date" id="sg-date-to">
+      </div>
+      <div class="date-badge" id="sg-date-badge"></div>
+      <div style="font-size:11px;color:#94a3c0;margin-bottom:16px">??移대뱶 ?깅줉???묒닔?? 湲곗??쇰줈 ?꾪꽣留곷맗?덈떎</div>
+      <div class="date-ft">
+        <button class="date-reset" id="btnSgDateClear">?꾪꽣 ?댁젣</button>
+        <button class="date-reset" id="btnSgDateReset" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;margin-right:4px;">珥덇린??/button><button class="date-apply" id="btnSgDateApply">?곸슜</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 湲곌컙 ?꾪꽣 紐⑤떖 -->
+<div class="ov" id="ov-date">
+  <div class="date-modal">
+    <div class="date-hd">
+      <h3>?뱟 湲곌컙 ?꾪꽣 ?ㅼ젙</h3>
+      <p>?묒? ?ㅼ슫濡쒕뱶 諛??듦퀎 ??쒕낫?쒖뿉 ?곸슜?⑸땲??/p>
+      <button class="date-cl" id="btnDateCl">??/button>
+    </div>
+    <div class="date-bd">
+      <div style="font-size:11px;font-weight:700;color:#94a3c0;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">鍮좊Ⅸ ?좏깮</div>
+      <div class="date-preset">
+        <div class="dps" data-preset="today">?ㅻ뒛</div>
+        <div class="dps" data-preset="week">?대쾲 二?/div>
+        <div class="dps" data-preset="month">?대쾲 ??/div>
+        <div class="dps" data-preset="last7">理쒓렐 7??/div>
+        <div class="dps" data-preset="last30">理쒓렐 30??/div>
+        <div class="dps" data-preset="last90">理쒓렐 3媛쒖썡</div>
+      </div>
+
+
+      <div style="font-size:11px;font-weight:700;color:#94a3c0;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">吏곸젒 ?낅젰</div>
+      <div class="date-range">
+        <label>?쒖옉</label>
+        <input type="date" id="date-from">
+        <span class="date-sep">~</span>
+        <label>醫낅즺</label>
+        <input type="date" id="date-to">
+      </div>
+      <div class="date-badge" id="date-badge"></div>
+      <div style="font-size:11px;color:#94a3c0;margin-bottom:16px">??移대뱶 ?깅줉???묒닔?? 湲곗??쇰줈 ?꾪꽣留곷맗?덈떎</div>
+      <div class="date-ft">
+        <button class="date-reset" id="btnDateReset">?꾪꽣 ?댁젣</button>
+        <button class="date-reset" id="btnDateClear2" style="background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;margin-right:4px;">珥덇린??/button><button class="date-apply" id="btnDateApply">?곸슜</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ?듦퀎 ??쒕낫??紐⑤떖 -->
+<div class="ov" id="ov-stat">
+  <div class="stat-modal">
+    <div class="stat-hd">
+      <div>
+        <h3>?뱤 CS ?곷떞 ?듦퀎 ??쒕낫??/h3>
+        <p id="stat-sub">?꾩껜 ?곷떞 ?꾪솴 ?붿빟</p>
+      </div>
+      <button class="stat-cl" id="btnStatCl">??/button>
+    </div>
+    <div class="stat-bd" id="stat-bd"></div>
+  </div>
+</div>
+
+<!-- 湲고븳 珥덇낵 ?뚮┝ ?앹뾽 -->
+
+<!-- 鍮좊Ⅸ ?듬? ?쒗뵆由?愿由?紐⑤떖 -->
+<div class="ov" id="ov-tpl">
+  <div class="tpl-modal">
+    <div class="tpl-hd">
+      <h3>?됵툘 鍮좊Ⅸ ?듬? ?쒗뵆由?愿由?/h3>
+      <p>?먯＜ ?곕뒗 ?듬? 臾멸뎄瑜??깅줉쨌愿由ы븯?몄슂</p>
+      <button class="tpl-cl" id="btnTplCl">??/button>
+    </div>
+    <div class="tpl-bd" id="tpl-bd"></div>
+    <div class="tpl-add-area">
+      <div style="font-size:11px;font-weight:700;color:#003087;margin-bottom:7px">+ ???쒗뵆由?異붽?</div>
+      <div class="tpl-add-row">
+        <textarea class="tpl-add-in" id="tpl-new-txt" placeholder="?듬? 臾멸뎄瑜??낅젰?섏꽭??.."></textarea>
+        <div class="tpl-add-r">
+          <select class="tpl-cat-sel" id="tpl-new-cat">
+            <option value="二쇰Ц/諛섑뭹">二쇰Ц/諛섑뭹</option>
+            <option value="?곹뭹">?곹뭹</option>
+            <option value="?뚯썝">?뚯썝</option>
+            <option value="?꾨줈紐⑥뀡">?꾨줈紐⑥뀡</option>
+            <option value="湲고?">湲고?</option>
+          </select>
+          <button class="tpl-add-btn" id="btnTplAdd">異붽?</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ??젣 ?뺤씤 -->
+<div class="cfm" id="cfm">
+  <div class="cfmi" id="cfmi">
+    <p id="cfmMsg">??移대뱶瑜???젣?섏떆寃좎뒿?덇퉴?</p>
+    <div class="cbtns">
+      <button class="bno" id="btnNo">痍⑥냼</button>
+      <button class="bys" id="btnYes">?뺤씤</button>
+    </div>
+  </div>
+</div>
+
+<!-- 留ㅻ돱???⑤꼸 -->
+<div class="panel" id="panel">
+  <div class="phd">
+    <h3 id="ptit">CS 留ㅻ돱??/h3><p id="psub">?곷떞 ???媛?대뱶</p>
+    <button class="pcl" id="btnPcl">??/button>
+  </div>
+  <div class="pbd" id="pbd"></div>
+</div>
+<div class="tsts" id="tsts"></div>
+
+<script>
+(function(){
+'use strict';
+var uid=100, editId=null, defCol='new', dragId=null, ftype='all', cfmCb=null;
+var sortMode = localStorage.getItem('yuhan_kanban_sort') || 'priority';
+var logCardId=null;
+var STORE_KEY='yuhan_kanban_v3';
+var dateFilter={from:'',to:''}; // CS 湲곌컙 ?꾪꽣
+var sgDateFilter={from:'',to:''}; // 嫄댁쓽 湲곌컙 ?꾪꽣
+
+function tod(){return new Date().toISOString().slice(0,10);}
+function addD(n){var d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+function addDFrom(base,n){var d=new Date(base);d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+// F1: ?곗꽑?쒖쐞蹂??먮룞 湲고븳 怨꾩궛
+var DL_MAP={u:0,h:2,n:5};
+function calcDeadline(created,pri){return addDFrom(created,DL_MAP[pri]!==undefined?DL_MAP[pri]:5);}
+// F1: SLA 諛곗? ?앹꽦 (吏꾪뻾以?移대뱶)
+function getSLABadge(c){
+  if(c.st==='done'||!c.deadline)return '';
+  var today=new Date(tod());var dl=new Date(c.deadline);
+  var diff=Math.floor((dl-today)/(86400000));
+  if(diff<0)return '<span class="sla-badge sla-over">??'+Math.abs(diff)+'??珥덇낵</span>';
+  if(diff===0)return '<span class="sla-badge sla-warn">??D-Day</span>';
+  if(diff<=1)return '<span class="sla-badge sla-warn">??D-'+diff+'</span>';
+  return '<span class="sla-badge sla-ok">?뱟 D-'+diff+'</span>';
+}
+// F3: ?뚯슂?쒓컙 怨꾩궛
+function calcElapsed(created,completedAt){
+  if(!created||!completedAt)return null;
+  var s=new Date(created);var e=new Date(completedAt);
+  var diffMs=e-s;if(diffMs<0)return null;
+  var mins=Math.floor(diffMs/60000);
+  var hrs=Math.floor(mins/60);var days=Math.floor(hrs/24);
+  if(days>0)return days+'??'+(hrs%24)+'?쒓컙';
+  if(hrs>0)return hrs+'?쒓컙 '+(mins%60)+'遺?;
+  return mins+'遺?;
+}
+
+// ?좎쭨/?붿씪
+(function(){
+  var days=['??,'??,'??,'??,'紐?,'湲?,'??];
+  var now=new Date();
+  var y=now.getFullYear();
+  var m=String(now.getMonth()+1).padStart(2,'0');
+  var d=String(now.getDate()).padStart(2,'0');
+  var el=document.getElementById('datebox');
+  if(el) el.innerHTML='<div class="ddate">'+y+'. '+m+'. '+d+'.</div><div class="dday">'+days[now.getDay()]+'?붿씪</div>';
+})();
+
+// ?? 湲곕낯 ?쒗뵆由???
+var DEFAULT_TPLS=[
+  {id:1,cat:'?뚯썝',txt:'?덈뀞?섏꽭?? ?좏븳??CS??낅땲?? 媛???뱀씤???꾨즺?섏뿀?듬땲?? ?댁젣 濡쒓렇?명븯???쒕퉬?ㅻ? ?댁슜?섏떎 ???덉뒿?덈떎.'},
+  {id:2,cat:'?뚯썝',txt:'媛???좎껌 ?뺣낫??遺덉씪移???ぉ???덉뼱 諛섎젮 泥섎━?섏뿀?듬땲?? ?ъ씠???ъ젒?????뺣낫 ?섏젙 ?섏씠吏?먯꽌 ?섏젙 ???ъ떊泥?遺?곷뱶由쎈땲??'},
+  {id:3,cat:'二쇰Ц/諛섑뭹',txt:'二쇰Ц 痍⑥냼 泥섎━媛 ?꾨즺?섏뿀?듬땲?? 痍⑥냼 ?ъ쑀: 怨좉컼 ?붿껌. 痍⑥냼 ?뚮┝?≪씠 諛쒖넚?섏뿀?듬땲??'},
+  {id:4,cat:'二쇰Ц/諛섑뭹',txt:'?ш껐???붿껌??諛쒖넚?섏??듬땲?? ?꾨줎?몄뿉??寃곗젣瑜??꾨즺??二쇱떆湲?諛붾엻?덈떎. 寃곗젣 湲고븳 ???꾨즺 遺?곷뱶由쎈땲??'},
+  {id:5,cat:'?곹뭹',txt:'?대떦 ?곹뭹? ?꾩옱 ?쇱떆 ?덉젅 ?곹깭?낅땲?? ?낃퀬 ?덉젙???뺤씤 ??蹂꾨룄 ?덈궡?쒕━寃좎뒿?덈떎.'},
+  {id:6,cat:'?곹뭹',txt:'?곹뭹 媛寃⑹? ERP ?곕룞 ??ぉ?쇰줈 愿由ъ옄?먯꽌 吏곸젒 ?섏젙??遺덇??⑸땲?? ERP ?대떦 遺?쒖뿉 ?섏젙 ?붿껌?섍쿋?듬땲??'},
+  {id:7,cat:'?꾨줈紐⑥뀡',txt:'?⑹궛?좎씤? ERP ?곗씠?곗? ?먮룞 ?곕룞?섏뼱 愿由ъ옄?먯꽌 吏곸젒 ?섏젙??遺덇??⑸땲?? ???⑥쐞濡??먮룞 媛깆떊?⑸땲??'},
+  {id:8,cat:'湲고?',txt:'臾몄쓽 二쇱떊 ?댁슜 ?뺤씤 ??鍮좊Ⅸ ?쒓컙 ?댁뿉 ?듬? ?쒕━寃좎뒿?덈떎. 媛먯궗?⑸땲??'}
+];
+
+// ?? ?곗씠??援ъ“ ??
+var cards=[];
+var archived=[];
+var templates=[];
+
+// ?? ?ъ씠?쒕컮 ?낅뜲?댄듃 ?쒓컖 ?쒖떆 ??
+function updateSbTime(elId){
+  var el=document.getElementById(elId);
+  if(!el)return;
+  var d=new Date();
+  el.textContent='updated '+d.getFullYear()+'.'+(d.getMonth()+1)+'.'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+
+// ?? localStorage ???遺덈윭?ㅺ린 ??
+function saveLocal(){
+  try{
+    localStorage.setItem(STORE_KEY,JSON.stringify({uid:uid,cards:cards,archived:archived,templates:templates}));
+    updateSbTime('sb-cs-update');
+  }catch(e){toast('?좑툘 ????ㅽ뙣: 釉뚮씪?곗? ???怨듦컙??遺議깊빀?덈떎. JSON 諛깆뾽??沅뚯옣?⑸땲??','err');}
+}
+function loadLocal(){
+  try{
+    var raw=localStorage.getItem(STORE_KEY);
+    if(!raw)return false;
+    var d=JSON.parse(raw);
+    if(d&&Array.isArray(d.cards)){
+      cards=d.cards;uid=d.uid||uid;
+      archived=Array.isArray(d.archived)?d.archived:[];
+      templates=Array.isArray(d.templates)?d.templates:DEFAULT_TPLS.slice();
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
+// ?? ?섑뵆 ?곗씠????
+var sampleCards=[
+  {id:uid++,co:'?쒕튆?쎄뎅',cc:'C001001',ti:'媛???뱀씤 ??濡쒓렇??遺덇?',ds:'?뚯썝媛???꾨즺 ?뚮┝ 諛쏆븯?쇰굹 濡쒓렇????誘몄듅??怨꾩젙 ?ㅻ쪟 諛쒖깮',tp:'mem',pr:'u',st:'new',created:tod(),logs:[]},
+  {id:uid++,co:'?쒖슱硫붾뵒而ъ쓽??,cc:'C002043',ti:'二쇰Ц 痍⑥냼 ?붿껌 (寃곗젣?꾨즺)',ds:'二쇰Ц踰덊샇 ORD-20260307-001, ?ㅻ같?≪쑝濡??명븳 痍⑥냼 ?붿껌',tp:'ord',pr:'u',st:'new',created:tod(),logs:[]},
+  {id:uid++,co:'?щ컮由꾩쓽??,cc:'C003218',ti:'?좉퇋 嫄곕옒泥?媛??諛섎젮 ?덈궡',ds:'?ъ뾽?먮벑濡앸쾲??遺덉씪移섎줈 諛섎젮. ?뺣낫 ?섏젙 ???ъ떊泥??덈궡 ?꾩슂',tp:'mem',pr:'n',st:'new',created:tod(),logs:[{id:1,who:'愿由ъ옄',txt:'諛섎젮 泥섎━ ?꾨즺. 怨좉컼?먭쾶 ?ъ떊泥??덈궡 ?덉젙.',ts:'2026-03-07 09:15',stage:'?묒닔 ?꾨즺'}]},
+  {id:uid++,co:'?섎뒛?쎄뎅',cc:'C004512',ti:'?곹뭹 誘몃끂異?臾몄쓽 (?꾩뒪?쇰┛ 100mg)',ds:'?댁젣源뚯? 蹂댁씠???곹뭹???ㅻ뒛 ?щ씪吏? ERP肄붾뱶 ASP-100 ?뺤씤 ?꾩슂',tp:'pro',pr:'h',st:'prog',created:addD(-3),logs:[{id:2,who:'愿由ъ옄',txt:'?곹뭹 愿由??뺤씤 寃곌낵 ?꾩떆?몄텧 誘몃끂異쒕줈 ?ㅼ젙?섏뼱 ?덉쓬. ?섏젙 以?',ts:'2026-03-07 10:00',stage:'泥섎━ 以?}]},
+  {id:uid++,co:'誘몃옒蹂묒썝',cc:'C005077',ti:'?⑹궛?좎씤 ?곸슜湲곌컙 ?섏젙 ?붿껌',ds:'3???⑹궛?좎씤 湲곌컙 ?ㅻ벑濡? ERP ?곕룞??ぉ?쇰줈 泥섎━ 遺덇? ?덈궡',tp:'prm',pr:'h',st:'prog',created:addD(-2),logs:[]},
+  {id:uid++,co:'洹몃┛?쎄뎅',cc:'C006344',ti:'寃곗젣 ?댁쨷 泥?뎄 ?섏떖',ds:'?숈씪 二쇰Ц ??嫄?寃곗젣?? ?щТ? 利됱떆 蹂닿퀬 ?꾩슂',tp:'ord',pr:'u',st:'esc2',created:addD(-1),logs:[{id:3,who:'愿由ъ옄',txt:'?щТ? 蹂닿퀬 ?꾨즺. ?먯씤 ?뚯븙 以?',ts:'2026-03-07 09:45',stage:'?먯뒪而щ젅?댁뀡'}]},
+  {id:uid++,co:'以묒븰?쎄뎅',cc:'C007891',ti:'鍮꾨?踰덊샇 李얘린 ?덈궡',ds:'濡쒓렇???섏씠吏 鍮꾨?踰덊샇 李얘린 硫붾돱濡??덈궡 ?꾨즺',tp:'mem',pr:'n',st:'done',created:addD(-5),logs:[{id:4,who:'愿由ъ옄',txt:'濡쒓렇???섏씠吏 鍮꾨?踰덊샇 李얘린濡??덈궡. 泥섎━ ?꾨즺.',ts:'2026-03-06 14:30',stage:'泥섎━ ?꾨즺'}]},
+  {id:uid++,co:'?몃Ⅸ?쎄뎅',cc:'C008129',ti:'?ш껐???붿껌 泥섎━ ?꾨즺',ds:'二쇰Ц??湲곗? 25??寃쎄낵. ?ш껐??泥섎━ ?꾨즺',tp:'ord',pr:'n',st:'done',created:addD(-7),logs:[]}
+];
+
+if(!loadLocal()){
+  cards=sampleCards;
+  templates=DEFAULT_TPLS.slice();
+  saveLocal();
+}
+
+// logs ?꾨뱶 蹂댁옣
+cards.forEach(function(c){if(!Array.isArray(c.logs))c.logs=[];if(!c.created)c.created=tod();if(c.deadline===undefined)c.deadline=null;if(c.completedAt===undefined)c.completedAt=null;if(c.elapsed===undefined)c.elapsed=null;if(!c.ch)c.ch='phone';});
+archived.forEach(function(c){if(!Array.isArray(c.logs))c.logs=[];if(!c.created)c.created=tod();if(c.deadline===undefined)c.deadline=null;if(c.completedAt===undefined)c.completedAt=null;if(c.elapsed===undefined)c.elapsed=null;if(!c.ch)c.ch='phone';});
+
+var TL={ord:'二쇰Ц/諛섑뭹',pro:'?곹뭹',mem:'?뚯썝',prm:'?꾨줈紐⑥뀡',etc:'湲고?'};
+var TC={ord:'bo',pro:'bp',mem:'bm',prm:'br',etc:'be'};
+var PL={u:'?뵶 湲닿툒',h:'?윞 ?믪쓬',n:'?뵷 蹂댄넻'};
+var PC={u:'bu2',h:'bh',n:'bn'};
+var KC={u:'kpu',h:'kph',n:'kpn'};
+var CHL={phone:"?뱸 ?꾪솕",site:"?뙋 ?좏븳??,chEtc:"?뱥 湲고?"};
+var CHC={phone:"bch-phone",site:"bch-site",chEtc:"bch-etc"};
+var SL={new:'?묒닔 ?꾨즺',prog:'泥섎━ 以?,esc2:'?먯뒪而щ젅?댁뀡',done:'泥섎━ ?꾨즺'};
+var AV=['#003087','#0066CC','#7c3aed','#10b981','#f59e0b','#ef4444'];
+var PR_WEIGHT = {u: 0, h: 1, n: 2};
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+// ?? 移대뱶 ?뺣젹 ??
+function sortCards(list, mode) {
+  if (mode === 'priority') {
+    return list.slice().sort(function(a, b) {
+      var pa = PR_WEIGHT[a.pr] !== undefined ? PR_WEIGHT[a.pr] : 2;
+      var pb = PR_WEIGHT[b.pr] !== undefined ? PR_WEIGHT[b.pr] : 2;
+      if (pa !== pb) return pa - pb;
+      return (a.created || '').localeCompare(b.created || '');
+    });
+  }
+  if (mode === 'newest') {
+    return list.slice().sort(function(a, b) {
+      return (b.created || '').localeCompare(a.created || '');
+    });
+  }
+  if (mode === 'oldest') {
+    return list.slice().sort(function(a, b) {
+      return (a.created || '').localeCompare(b.created || '');
+    });
+  }
+  return list;
+}
+
+// ?? ?뚮뜑 ??
+function render(){
+  var q=(document.getElementById('q').value||'').trim().toLowerCase();
+  ['new','prog','esc2','done'].forEach(function(col){
+    var bd=document.getElementById('bd-'+col);
+    var ct=document.getElementById('ct-'+col);
+    if(!bd||!ct)return;
+    var list=cards.filter(function(c){
+      return c.st===col&&(ftype==='all'||c.tp===ftype)&&(!q||c.co.toLowerCase().indexOf(q)>=0||c.ti.toLowerCase().indexOf(q)>=0||(c.cc&&c.cc.toLowerCase().indexOf(q)>=0)||(c.ds&&c.ds.toLowerCase().indexOf(q)>=0));
+    });
+    if(sortMode!=='manual') list=sortCards(list,sortMode);
+    ct.textContent=list.length;
+    if(!list.length){
+      if(col==='done'){
+        bd.innerHTML='<div class="emp" style="color:#94a3c0;">?뾼 ?꾩뭅?대툕??<strong style="color:#3b82f6;">'+archived.length+'</strong>媛?蹂닿? 以?/div>';
+      } else {
+        bd.innerHTML='<div class="emp">?벊 移대뱶 ?놁쓬</div>';
+      }
+      return;
+    }
+    bd.innerHTML=list.map(function(c){
+      var lc=c.logs?c.logs.length:0;
+      return '<div class="card '+KC[c.pr]+'" draggable="true" data-id="'+c.id+'">'
+        +'<div class="ct"><span class="cid">#CS-'+String(c.id).padStart(4,'0')+'</span>'
+        +'<div class="bgs"><span class="b '+TC[c.tp]+'">'+TL[c.tp]+'</span><span class="b '+PC[c.pr]+'">'+PL[c.pr]+'</span>'+(c.ch&&CHC[c.ch]?'<span class="b '+CHC[c.ch]+'">'+CHL[c.ch]+'</span>':'')+'</div></div>'
+        +'<div class="ctit">'+esc(c.co)+(c.cc?' <span style="font-size:10px;color:#94a3c0;font-weight:600;">['+esc(c.cc)+']</span>':'')+'</div>'
+        +'<div style="font-size:11px;color:#5a6a88;margin:2px 0 4px;font-weight:500;">'+esc(c.ti)+'</div>'
+        +(c.ds?'<div class="cds">'+esc(c.ds)+'</div>':'')
+        +'<div class="cf"><span style="font-size:11px;color:#94a3c0;">?뱟 ?묒닔 '+esc(c.created||'')+'</span>'
+        +getSLABadge(c)
+        +(c.st==='done'&&c.elapsed?'<span class="elapsed-badge">??'+esc(c.elapsed)+'</span>':'')
+        +'</div>'
+        +'<div class="card-meta">'
+        +(lc>0?'<span class="log-cnt" data-logid="'+c.id+'">?뮠 ?대젰 '+lc+'</span>':'<span class="log-cnt" data-logid="'+c.id+'" style="background:#f0f4fa;color:#94a3c0">?뮠 ?대젰</span>')
+        +'</div>'
+        +'<div class="cas">'
+        +'<button class="ca" data-copy="'+c.id+'" title="移대뱶 蹂듭궗">?뱥</button>'
+        +'<button class="ca" data-edit="'+c.id+'" title="?섏젙">?륅툘</button>'
+        +(col==='done'
+          ? '<button class="ca" data-arc="'+c.id+'" title="?꾩뭅?대툕濡??대룞" style="color:#6b7280;">?뾼</button>'
+          : '<button class="ca dl" data-del="'+c.id+'" title="??젣">?뿊</button>')
+        +'</div>'
+        +'</div>';
+    }).join('');
+    bd.querySelectorAll('.card').forEach(function(el){
+      el.addEventListener('dragstart',function(e){dragId=el.dataset.id;e.dataTransfer.effectAllowed='move';setTimeout(function(){el.classList.add('drg');},0);});
+      el.addEventListener('dragend',function(){el.classList.remove('drg');document.querySelectorAll('.col').forEach(function(c){c.classList.remove('dov');});});
+    });
+    bd.querySelectorAll('[data-edit]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();editCard(+b.dataset.edit);});});
+    bd.querySelectorAll('[data-del]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();delCard(+b.dataset.del);});});
+    bd.querySelectorAll('[data-arc]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();archiveCard(+b.dataset.arc);});});
+    // ??移대뱶 蹂듭궗
+    bd.querySelectorAll('[data-copy]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();copyCard(+b.dataset.copy);});});
+    // ??泥섎━ ?대젰
+    bd.querySelectorAll('[data-logid]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();openLog(+b.dataset.logid);});});
+  });
+  rstats();
+}
+
+function rstats(){
+  var act=cards.filter(function(c){return c.st!=='done';});
+  var u=act.filter(function(c){return c.pr==='u';}).length;
+  var h=act.filter(function(c){return c.pr==='h';}).length;
+  var n=act.filter(function(c){return c.pr==='n';}).length;
+  var overdue=act.filter(function(c){return c.deadline&&new Date(c.deadline)<new Date(tod());}).length;
+  document.getElementById('hstats').innerHTML=
+    '<div class="sc"><div class="dot" style="background:#ef4444"></div>湲닿툒 '+u+'</div>'
+    +'<div class="sc"><div class="dot" style="background:#f59e0b"></div>?믪쓬 '+h+'</div>'
+    +'<div class="sc"><div class="dot" style="background:#3b8fe8"></div>吏꾪뻾以?'+act.length+'</div>'
+    +(overdue>0?'<div class="sc"><div class="dot" style="background:#dc2626"></div>??湲고븳珥덇낵 '+overdue+'</div>':'');
+  document.getElementById('pcnt').innerHTML=
+    '<div class="pr pu"><div class="pl">?뵶 湲닿툒</div><div class="pn">'+u+'</div></div>'
+    +'<div class="pr ph"><div class="pl">?윞 ?믪쓬</div><div class="pn">'+h+'</div></div>'
+    +'<div class="pr pn2"><div class="pl">?뵷 蹂댄넻</div><div class="pn">'+n+'</div></div>';
+}
+
+// ?? ?쒕옒洹몄븻?쒕∼ (而щ읆 媛??대룞 + 而щ읆 ???뺣젹) ??
+document.querySelectorAll('.col').forEach(function(col){
+  var cid=col.id.replace('col-','');
+
+  col.addEventListener('dragover',function(e){
+    e.preventDefault();
+    document.querySelectorAll('.col').forEach(function(c){c.classList.remove('dov');});
+    col.classList.add('dov');
+    // ?섎룞 ?뺣젹 紐⑤뱶: 媛숈? 而щ읆 ???쒕∼ ?몃뵒耳?댄꽣
+    if(sortMode==='manual'&&dragId){
+      var dragCard=cards.find(function(c){return c.id==dragId;});
+      if(dragCard&&dragCard.st===cid){
+        var cardEls=col.querySelectorAll('.card');
+        cardEls.forEach(function(el){el.classList.remove('drop-above');});
+        for(var i=0;i<cardEls.length;i++){
+          var rect=cardEls[i].getBoundingClientRect();
+          var mid=rect.top+rect.height/2;
+          if(e.clientY<mid){
+            cardEls[i].classList.add('drop-above');
+            break;
+          }
+        }
+      }
+    }
+  });
+
+  col.addEventListener('dragleave',function(e){
+    if(!col.contains(e.relatedTarget)){
+      col.classList.remove('dov');
+      col.querySelectorAll('.card').forEach(function(el){el.classList.remove('drop-above');});
+    }
+  });
+
+  col.addEventListener('drop',function(e){
+    e.preventDefault();col.classList.remove('dov');
+    col.querySelectorAll('.card').forEach(function(el){el.classList.remove('drop-above');});
+    if(!dragId)return;
+    var card=cards.find(function(c){return c.id==dragId;});
+    if(!card){dragId=null;return;}
+
+    if(card.st===cid){
+      // ?? 媛숈? 而щ읆 ???쒖꽌 蹂寃???
+      if(sortMode!=='manual'){
+        toast('?좑툘 ?먮룞 ?뺣젹 紐⑤뱶?먯꽌???쒖꽌瑜?蹂寃쏀븷 ???놁뒿?덈떎','err');
+        dragId=null;return;
+      }
+      var cardEls=col.querySelectorAll('.card');
+      var targetIdx=-1;
+      for(var i=0;i<cardEls.length;i++){
+        var rect=cardEls[i].getBoundingClientRect();
+        var mid=rect.top+rect.height/2;
+        if(e.clientY<mid){targetIdx=i;break;}
+      }
+      var colCards=[];
+      cards.forEach(function(c,idx){if(c.st===cid)colCards.push({card:c,origIdx:idx});});
+      var fromColIdx=-1;
+      colCards.forEach(function(item,i){if(item.card.id==dragId)fromColIdx=i;});
+      if(fromColIdx<0){dragId=null;return;}
+      var toColIdx=(targetIdx<0)?colCards.length:targetIdx;
+      if(toColIdx===fromColIdx||toColIdx===fromColIdx+1){dragId=null;return;}
+      var fromOrigIdx=colCards[fromColIdx].origIdx;
+      var removed=cards.splice(fromOrigIdx,1)[0];
+      var toOrigIdx;
+      if(toColIdx>=colCards.length){
+        var lastInCol=-1;
+        cards.forEach(function(c,idx){if(c.st===cid)lastInCol=idx;});
+        toOrigIdx=lastInCol+1;
+      } else {
+        var targetCard=colCards[toColIdx].card;
+        toOrigIdx=cards.indexOf(targetCard);
+        if(toOrigIdx<0)toOrigIdx=cards.length;
+      }
+      cards.splice(toOrigIdx,0,removed);
+      saveLocal();render();
+      toast('?뱦 移대뱶 ?쒖꽌 蹂寃?,'ok');
+    } else {
+      // ?? ?ㅻⅨ 而щ읆?쇰줈 ?대룞 (湲곗〈 濡쒖쭅) ??
+      var prev=card.st;card.st=cid;
+      if(cid==='done'){card.completedAt=getNow();card.elapsed=calcElapsed(card.created,card.completedAt);}
+      else if(prev==='done'){card.completedAt=null;card.elapsed=null;}
+      if(!card.logs)card.logs=[];
+      card.logs.push({id:Date.now(),who:'?쒖뒪??,txt:SL[prev]+' ??'+SL[cid]+' ?쇰줈 ?④퀎 ?대룞',ts:getNow(),stage:SL[cid]});
+      saveLocal();render();
+      toast('????'+SL[cid],'ok');
+    }
+    dragId=null;
+  });
+});
+
+// ?? ?꾪꽣 ??
+document.querySelectorAll('.fc').forEach(function(el){
+  el.addEventListener('click',function(){ftype=el.dataset.f;document.querySelectorAll('.fc').forEach(function(c){c.classList.remove('on');});el.classList.add('on');render();});
+});
+document.getElementById('q').addEventListener('input',function(){
+  var btn=document.querySelector('.search-clear[data-for="q"]');
+  if(btn)btn.style.display=this.value?'block':'none';
+  render();
+});
+// ?? 寃???대━??踰꾪듉 ??
+document.querySelectorAll('.search-clear').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var inp=document.getElementById(btn.dataset.for);
+    if(!inp)return;
+    inp.value='';btn.style.display='none';inp.focus();
+    if(btn.dataset.for==='q')render();
+    if(btn.dataset.for==='sg-q'&&typeof sgRender==='function')sgRender();
+  });
+});
+// ?? ?뺣젹 紐⑤뱶 ??
+(function(){
+  var sel=document.getElementById('sortMode');
+  if(!sel)return;
+  sel.value=sortMode;
+  sel.addEventListener('change',function(){
+    sortMode=sel.value;
+    localStorage.setItem('yuhan_kanban_sort',sortMode);
+    render();
+    toast('?뺣젹: '+sel.options[sel.selectedIndex].text,'ok');
+  });
+})();
+document.querySelectorAll('.abtn:not(.sg-abtn)').forEach(function(b){b.addEventListener('click',function(e){if(b.id==='btnArchiveAll')return;openM(b.dataset.col);});});
+document.getElementById('btnNew').addEventListener('click',function(){openM('new');});
+
+// ?? 移대뱶 CRUD ??
+function openM(col){
+  editId=null;defCol=col||'new';
+  document.getElementById('mico').textContent='?뱥';document.getElementById('mttl').textContent='???곷떞 移대뱶 ?깅줉';
+  document.getElementById('fc').value='';document.getElementById('fcc').value='';document.getElementById('ftype').value='ord';document.getElementById('fch').value='phone';
+  document.getElementById('ftit').value='';document.getElementById('fdesc').value='';
+  document.getElementById('fpri').value='n';
+  document.getElementById('fdl').value='';
+  document.getElementById('fst').value=defCol;
+  document.getElementById('ov').classList.add('open');
+  setTimeout(function(){document.getElementById('fc').focus();},200);
+}
+function editCard(id){
+  var c=cards.find(function(x){return x.id===id;});if(!c)return;editId=id;
+  document.getElementById('mico').textContent='?륅툘';document.getElementById('mttl').textContent='?곷떞 移대뱶 ?섏젙';
+  document.getElementById('fc').value=c.co;document.getElementById('fcc').value=c.cc||'';document.getElementById('ftype').value=c.tp;document.getElementById('fch').value=c.ch||'phone';
+  document.getElementById('ftit').value=c.ti;document.getElementById('fdesc').value=c.ds||'';
+  document.getElementById('fpri').value=c.pr;
+  document.getElementById('fdl').value=c.deadline||'';
+  document.getElementById('fst').value=c.st;
+  document.getElementById('ov').classList.add('open');
+}
+function closeM(){document.getElementById('ov').classList.remove('open');editId=null;}
+document.getElementById('ov').addEventListener('click',function(e){if(e.target===this)closeM();});
+document.getElementById('btnCnl').addEventListener('click',closeM);
+document.getElementById('btnSav').addEventListener('click',function(){
+  var co=document.getElementById('fc').value.trim();
+  var ti=document.getElementById('ftit').value.trim();
+  if(!co){document.getElementById('fc').focus();toast('嫄곕옒泥섎챸???낅젰?섏꽭??,'err');return;}
+  if(!ti){document.getElementById('ftit').focus();toast('?쒕ぉ???낅젰?섏꽭??,'err');return;}
+  var d={co:co,cc:document.getElementById('fcc').value.trim(),tp:document.getElementById('ftype').value,ti:ti,ds:document.getElementById('fdesc').value.trim(),
+    pr:document.getElementById('fpri').value,
+    st:document.getElementById('fst').value,ch:document.getElementById('fch').value};
+  var dlVal=document.getElementById('fdl').value;
+  if(editId){
+    var c=cards.find(function(x){return x.id===editId;});
+    if(!c.logs)c.logs=[];
+    var prevSt=c.st;
+    d.deadline=dlVal||c.deadline||null;
+    // F3: ?꾨즺 ?곹깭 ?꾪솚 ???뚯슂?쒓컙 湲곕줉
+    if(d.st==='done'&&prevSt!=='done'){
+      d.completedAt=getNow();d.elapsed=calcElapsed(c.created,d.completedAt);
+    } else if(d.st!=='done'&&prevSt==='done'){
+      d.completedAt=null;d.elapsed=null;
+    }
+    c.logs.push({id:Date.now(),who:'愿由ъ옄',txt:'移대뱶 ?뺣낫 ?섏젙 ('+SL[d.st]+')',ts:getNow(),stage:SL[d.st]});
+    Object.assign(c,d);toast('?섏젙?섏뿀?듬땲??,'ok');
+  } else {
+    d.id=uid++;d.logs=[];d.created=tod();
+    // F1: ?먮룞 湲고븳 怨꾩궛 (?섎룞 ?낅젰 ?곗꽑)
+    d.deadline=dlVal||calcDeadline(d.created,d.pr);
+    d.completedAt=null;d.elapsed=null;
+    // F3: 諛붾줈 ?꾨즺濡??깅줉??寃쎌슦
+    if(d.st==='done'){d.completedAt=getNow();d.elapsed=calcElapsed(d.created,d.completedAt);}
+    d.logs.push({id:Date.now(),who:'愿由ъ옄',txt:'?곷떞 ?묒닔',ts:getNow(),stage:SL[d.st]});
+    cards.push(d);toast('?깅줉?섏뿀?듬땲??,'ok');
+  }
+  closeM();saveLocal();render();
+});
+
+
+// ?? ?뺤씤 ?ㅼ씠?쇰줈洹??ы띁 ??
+function showConfirm(msg, yesLabel, cb){
+  document.getElementById('cfmMsg').textContent=msg;
+  document.getElementById('btnYes').textContent=yesLabel||'?뺤씤';
+  document.getElementById('cfm').classList.add('open');
+  cfmCb=function(yes){
+    document.getElementById('cfm').classList.remove('open');
+    cb(yes);
+    cfmCb=null;
+  };
+}
+function delCard(id){
+  var c=cards.find(function(x){return x.id===id;});if(!c)return;
+  showConfirm('"'+c.co+' 쨌 '+c.ti+'" 移대뱶瑜???젣?섏떆寃좎뒿?덇퉴?','?뿊 ??젣',function(yes){
+    if(yes){cards=cards.filter(function(x){return x.id!==id;});saveLocal();render();toast('??젣?섏뿀?듬땲??);}
+  });
+}
+document.getElementById('btnNo').addEventListener('click',function(e){e.stopPropagation();if(cfmCb)cfmCb(false);});
+document.getElementById('btnYes').addEventListener('click',function(e){e.stopPropagation();if(cfmCb)cfmCb(true);});
+document.getElementById('cfmi').addEventListener('click',function(e){e.stopPropagation();});
+document.getElementById('cfm').addEventListener('click',function(e){if(e.target===this&&cfmCb)cfmCb(false);});
+
+// ??移대뱶 蹂듭궗
+function copyCard(id){
+  var c=cards.find(function(x){return x.id===id;});if(!c)return;
+  var nc=JSON.parse(JSON.stringify(c));
+  nc.id=uid++;nc.logs=[];nc.co=c.co+' (蹂듭궗)';nc.st='new';nc.created=getNow();nc.completedAt=null;nc.elapsed=null;nc.deadline=null;
+  nc.logs.push({id:Date.now(),who:'?쒖뒪??,txt:'"'+c.co+' 쨌 '+c.ti+'" 移대뱶?먯꽌 蹂듭궗??,ts:getNow(),stage:'?묒닔 ?꾨즺'});
+  cards.push(nc);saveLocal();render();
+  toast('?뱥 移대뱶媛 蹂듭궗?섏뿀?듬땲??(?묒닔 ?꾨즺)','ok');
+}
+
+// ?? ?꾩뭅?대툕 ??
+function updateArcCnt(){
+  document.getElementById('arc-cnt').textContent=archived.length;
+}
+function archiveCard(id){
+  var c=cards.find(function(x){return x.id===id;});if(!c)return;
+  c.logs.push({id:Date.now(),who:'?쒖뒪??,txt:'?꾩뭅?대툕濡??대룞',ts:getNow(),stage:'泥섎━ ?꾨즺'});
+  c.archivedAt=tod();
+  archived.push(c);
+  cards=cards.filter(function(x){return x.id!==id;});
+  saveLocal();render();updateArcCnt();
+  toast('?뾼 ?꾩뭅?대툕濡??대룞?덉뒿?덈떎','ok');
+}
+function archiveAll(){
+  var doneCards=cards.filter(function(c){return c.st==='done';});
+  if(!doneCards.length){toast('泥섎━ ?꾨즺 移대뱶媛 ?놁뒿?덈떎');return;}
+  showConfirm('泥섎━ ?꾨즺 移대뱶 '+doneCards.length+'嫄댁쓣 紐⑤몢 ?꾩뭅?대툕濡??대룞?섏떆寃좎뒿?덇퉴?','?뾼 ?대룞',function(yes){
+    if(yes){
+      var now=tod();var ts=getNow();
+      doneCards.forEach(function(c){
+        c.logs.push({id:Date.now(),who:'?쒖뒪??,txt:'?꾩뭅?대툕濡??대룞 (?쇨큵)',ts:ts,stage:'泥섎━ ?꾨즺'});
+        c.archivedAt=now;
+        archived.push(c);
+      });
+      cards=cards.filter(function(c){return c.st!=='done';});
+      saveLocal();render();updateArcCnt();
+      toast('?뾼 '+doneCards.length+'嫄??꾩뭅?대툕 ?꾨즺','ok');
+    }
+  });
+}
+function renderArcModal(){
+  var q=(document.getElementById('arc-q').value||'').trim().toLowerCase();
+  var list=archived.filter(function(c){
+    return !q||c.co.toLowerCase().indexOf(q)>=0||c.ti.toLowerCase().indexOf(q)>=0||(c.cc&&c.cc.toLowerCase().indexOf(q)>=0);
+  }).slice().reverse(); // 理쒖떊??  document.getElementById('arc-sub').textContent='珥?'+archived.length+'嫄?蹂닿? 以?+(q?' 쨌 寃??寃곌낵 '+list.length+'嫄?:'');
+  var bd=document.getElementById('arc-bd');
+  if(!list.length){bd.innerHTML='<div class="arc-empty">?벊 '+(q?'寃??寃곌낵媛 ?놁뒿?덈떎':'?꾩뭅?대툕媛 鍮꾩뼱?덉뒿?덈떎')+'</div>';return;}
+  bd.innerHTML=list.map(function(c){
+    var lc=c.logs?c.logs.length:0;
+    return '<div class="arc-row">'
+      +'<div class="arc-info">'
+      +'<div><span class="arc-co">'+esc(c.co)+'</span>'+(c.cc?'<span class="arc-cc">['+esc(c.cc)+']</span>':'')+'</div>'
+      +'<div class="arc-ti">'+esc(c.ti)+'</div>'
+      +'<div class="arc-meta">'
+      +'<span class="b '+TC[c.tp]+'" style="font-size:10px;">'+TL[c.tp]+'</span>'
+      +'<span class="b '+PC[c.pr]+'" style="font-size:10px;">'+PL[c.pr]+'</span>'
+      +(c.ch&&CHC[c.ch]?'<span class="b '+CHC[c.ch]+'" style="font-size:10px;">'+CHL[c.ch]+'</span>':'')
+      +'<span class="arc-date">?뱟 ?묒닔 '+esc(c.created||'')+'</span>'
+      +(c.archivedAt?'<span class="arc-date">?뾼 蹂닿? '+esc(c.archivedAt)+'</span>':'')
+      +(lc?'<span class="arc-date">?뮠 ?대젰 '+lc+'嫄?/span>':'')
+      +'</div>'
+      +'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">'
+      +'<button class="arc-restore" data-arcrestore="'+c.id+'">??蹂듭썝</button>'
+      +'<button class="arc-del" data-arcdel="'+c.id+'">?뿊 ??젣</button>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+  bd.querySelectorAll('[data-arcrestore]').forEach(function(b){b.addEventListener('click',function(){restoreCard(+b.dataset.arcrestore);});});
+  bd.querySelectorAll('[data-arcdel]').forEach(function(b){b.addEventListener('click',function(){permDeleteCard(+b.dataset.arcdel);});});
+}
+function restoreCard(id){
+  var c=archived.find(function(x){return x.id===id;});if(!c)return;
+  c.logs.push({id:Date.now(),who:'?쒖뒪??,txt:'?꾩뭅?대툕?먯꽌 蹂듭썝??,ts:getNow(),stage:'泥섎━ ?꾨즺'});
+  delete c.archivedAt;
+  cards.push(c);
+  archived=archived.filter(function(x){return x.id!==id;});
+  saveLocal();render();updateArcCnt();renderArcModal();
+  toast('??移대뱶媛 蹂듭썝?섏뿀?듬땲??,'ok');
+}
+function permDeleteCard(id){
+  var c=archived.find(function(x){return x.id===id;});if(!c)return;
+  showConfirm('"'+c.co+' 쨌 '+c.ti+'" 移대뱶瑜??곴뎄 ??젣?섏떆寃좎뒿?덇퉴? 蹂듦뎄?????놁뒿?덈떎.','?뿊 ?곴뎄??젣',function(yes){
+    if(yes){archived=archived.filter(function(x){return x.id!==id;});saveLocal();updateArcCnt();renderArcModal();toast('??젣?섏뿀?듬땲??);}
+  });
+}
+document.getElementById('btnArchive').addEventListener('click',function(){renderArcModal();document.getElementById('ov-arc').classList.add('open');});
+document.getElementById('btnArcCl').addEventListener('click',function(){document.getElementById('ov-arc').classList.remove('open');});
+document.getElementById('ov-arc').addEventListener('click',function(e){if(e.target===this)document.getElementById('ov-arc').classList.remove('open');});
+document.getElementById('arc-q').addEventListener('input',renderArcModal);
+document.getElementById('btnArchiveAll').addEventListener('click',archiveAll);
+document.getElementById('btnArcXlsx').addEventListener('click',function(){exportXlsx(archived,'?좏븳??CS?꾩뭅?대툕_');});
+
+
+// ?? ??泥섎━ ?대젰 ??
+function getNow(){
+  var n=new Date();
+  return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')
+    +' '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+}
+
+function openLog(id){
+  var c=cards.find(function(x){return x.id===id;});if(!c)return;
+  logCardId=id;
+  document.getElementById('log-ttl').textContent='#CS-'+String(c.id).padStart(4,'0')+' 泥섎━ ?대젰';
+  document.getElementById('log-sub').textContent=c.co+' 쨌 '+c.ti;
+  renderLog(c);
+  renderTplChips();
+  document.getElementById('ov-log').classList.add('open');
+}
+function closeLog(){document.getElementById('ov-log').classList.remove('open');logCardId=null;}
+document.getElementById('btnLogCl').addEventListener('click',closeLog);
+document.getElementById('ov-log').addEventListener('click',function(e){if(e.target===this)closeLog();});
+
+function renderLog(c){
+  var bd=document.getElementById('log-bd');
+  var logs=c.logs||[];
+  if(!logs.length){bd.innerHTML='<div class="log-empty">?벊 泥섎━ ?대젰???놁뒿?덈떎.</div>';return;}
+  var html='';
+  logs.forEach(function(lg,i){
+    html+='<div class="log-item">'
+      +'<div class="log-line"><div class="log-dot"></div>'+(i<logs.length-1?'<div class="log-vl"></div>':'')+'</div>'
+      +'<div class="log-content">'
+      +'<div class="log-meta">'
+      +'<span class="log-who">'+esc(lg.who)+'</span>'
+      +'<span class="log-time">'+esc(lg.ts)+'</span>'
+      +(lg.stage?'<span class="log-stage">'+esc(lg.stage)+'</span>':'')
+      +'</div>'
+      +'<div class="log-txt">'+esc(lg.txt)+'</div>'
+      +'</div></div>';
+  });
+  bd.innerHTML=html;
+  bd.scrollTop=bd.scrollHeight;
+}
+
+// btnLogAdd??嫄댁쓽/CS ?듯빀 泥섎━ ?뱀뀡?먯꽌 ?깅줉??
+
+// ?? ??鍮좊Ⅸ ?듬? ?쒗뵆由???
+function renderTplChips(){
+  var chips=document.getElementById('tpl-chips');
+  if(!chips)return;
+  chips.innerHTML=templates.map(function(t){
+    return '<button class="tpl-chip" data-tplid="'+t.id+'">'+esc(t.cat)+': '+esc(t.txt.slice(0,20))+(t.txt.length>20?'??:'')+'</button>';
+  }).join('');
+  chips.querySelectorAll('[data-tplid]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var tpl=templates.find(function(t){return t.id==b.dataset.tplid;});
+      if(!tpl)return;
+      var tin=document.getElementById('log-txt-in');
+      tin.value=tpl.txt;tin.focus();
+      toast('?됵툘 ?쒗뵆由??곸슜??,'ok');
+    });
+  });
+}
+
+// ?쒗뵆由?愿由?紐⑤떖
+document.getElementById('btnTpl').addEventListener('click',openTplModal);
+document.getElementById('btnTplCl').addEventListener('click',function(){document.getElementById('ov-tpl').classList.remove('open');});
+document.getElementById('ov-tpl').addEventListener('click',function(e){if(e.target===this)document.getElementById('ov-tpl').classList.remove('open');});
+
+function openTplModal(){
+  renderTplList();
+  document.getElementById('ov-tpl').classList.add('open');
+}
+function renderTplList(){
+  var bd=document.getElementById('tpl-bd');
+  if(!templates.length){bd.innerHTML='<div style="text-align:center;padding:20px;color:#94a3c0;font-size:12px">?깅줉???쒗뵆由우씠 ?놁뒿?덈떎.</div>';return;}
+  bd.innerHTML=templates.map(function(t){
+    return '<div class="tpl-list-item" data-tplid="'+t.id+'">'
+      +'<span class="tpl-list-cat">'+esc(t.cat)+'</span>'
+      +'<div class="tpl-list-txt">'+esc(t.txt)+'</div>'
+      +'<div class="tpl-list-btns">'
+      +'<button class="tpl-cp" data-tcp="'+t.id+'" title="?대┰蹂대뱶 蹂듭궗">?뱥</button>'
+      +'<button class="tpl-rm" data-trm="'+t.id+'" title="??젣">?뿊</button>'
+      +'</div></div>';
+  }).join('');
+  bd.querySelectorAll('[data-tcp]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var tpl=templates.find(function(t){return t.id==b.dataset.tcp;});
+      if(!tpl)return;
+      try{navigator.clipboard.writeText(tpl.txt).then(function(){toast('?뱥 ?대┰蹂대뱶??蹂듭궗??,'ok');});}
+      catch(e){toast('蹂듭궗: '+tpl.txt.slice(0,20)+'...','ok');}
+    });
+  });
+  bd.querySelectorAll('[data-trm]').forEach(function(b){
+    b.addEventListener('click',function(){
+      templates=templates.filter(function(t){return t.id!=b.dataset.trm;});
+      saveLocal();renderTplList();toast('?쒗뵆由???젣??);
+    });
+  });
+}
+document.getElementById('btnTplAdd').addEventListener('click',function(){
+  var txt=document.getElementById('tpl-new-txt').value.trim();
+  var cat=document.getElementById('tpl-new-cat').value;
+  if(!txt){toast('?댁슜???낅젰?섏꽭??,'err');return;}
+  templates.push({id:Date.now(),cat:cat,txt:txt});
+  document.getElementById('tpl-new-txt').value='';
+  saveLocal();renderTplList();toast('?쒗뵆由?異붽???,'ok');
+});
+
+// ?? ???듦퀎 ??쒕낫????
+document.getElementById('btnStat').addEventListener('click',openStat);
+document.getElementById('btnStatCl').addEventListener('click',function(){document.getElementById('ov-stat').classList.remove('open');});
+document.getElementById('ov-stat').addEventListener('click',function(e){if(e.target===this)document.getElementById('ov-stat').classList.remove('open');});
+
+function openStat(){
+  var hasFilter=dateFilter.from||dateFilter.to;
+  var filtered=getDateFilteredCards();
+  var sub=hasFilter
+    ? '湲곌컙 ?꾪꽣 ?곸슜 以???'+filtered.length+'嫄?쨌 '+tod()+' 湲곗?'
+    : '?꾩껜 移대뱶 '+cards.length+'嫄?쨌 '+tod()+' 湲곗?';
+  document.getElementById('stat-sub').textContent=sub;
+  renderStat(filtered);
+  document.getElementById('ov-stat').classList.add('open');
+}
+function renderStat(targetCards){
+  if(!targetCards) targetCards=getDateFilteredCards();
+  var bd=document.getElementById('stat-bd');
+  var total=targetCards.length;
+  var act=targetCards.filter(function(c){return c.st!=='done';});
+  var done=targetCards.filter(function(c){return c.st==='done';});
+  var urg=targetCards.filter(function(c){return c.pr==='u'&&c.st!=='done';});
+  var over=act.filter(function(c){return c.deadline&&new Date(c.deadline)<new Date(tod());});
+
+  // ?④퀎蹂?  var stageC={new:0,prog:0,esc2:0,done:0};
+  targetCards.forEach(function(c){stageC[c.st]=(stageC[c.st]||0)+1;});
+
+  // ?좏삎蹂?  var typeC={};
+  targetCards.forEach(function(c){typeC[c.tp]=(typeC[c.tp]||0)+1;});
+  var typeMax=Math.max.apply(null,Object.values(typeC).concat([1]));
+
+
+  var html='';
+  // 湲곌컙 ?꾪꽣 ?곸슜 以?諛곕꼫
+  if(dateFilter.from||dateFilter.to){
+    var rangeLabel=(dateFilter.from||'?꾩껜')+' ~ '+(dateFilter.to||'?꾩껜');
+    html+='<div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:9px 14px;font-size:12px;color:#92400e;margin-bottom:14px;display:flex;align-items:center;gap:8px;">'
+      +'<span style="font-size:15px">?뱟</span>'
+      +'<span><strong>湲곌컙 ?꾪꽣 ?곸슜 以?</strong> '+rangeLabel+' 쨌 珥?'+total+'嫄?/span>'
+      +'</div>';
+  }
+  // 嫄댁쓽 ?붿빟
+  var sgTotal=sgCards.length;
+  var sgAct=sgCards.filter(function(c){return c.st!=='accept';}).length;
+  var sgDone=sgCards.filter(function(c){return c.st==='accept';}).length;
+
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">'
+    +'<div style="background:#f0f6ff;border-radius:12px;padding:14px 16px;">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><span style="font-size:10px;font-weight:700;color:#003087;letter-spacing:1px;">?룯 CS ?곷떞 ?꾪솴</span><span style="background:#6b7280;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:600;">?뾼 '+archived.length+'</span></div>'
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">'
+    +'<div style="background:#fff;border-radius:8px;padding:8px 4px;text-align:center;"><div style="font-size:22px;font-weight:800;color:#1e293b;">'+total+'</div><div style="font-size:10px;color:#64748b;margin-top:2px;">?꾩껜</div></div>'
+    +'<div style="background:#fff;border-radius:8px;padding:8px 4px;text-align:center;"><div style="font-size:22px;font-weight:800;color:#ef4444;">'+act.length+'</div><div style="font-size:10px;color:#64748b;margin-top:2px;">吏꾪뻾以?/div></div>'
+    +'<div style="background:#fff;border-radius:8px;padding:8px 4px;text-align:center;"><div style="font-size:22px;font-weight:800;color:#10b981;">'+done.length+'</div><div style="font-size:10px;color:#64748b;margin-top:2px;">?꾨즺</div></div>'
+    +'</div></div>'
+    +'<div style="background:#f0fdf4;border-radius:12px;padding:14px 16px;">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><span style="font-size:10px;font-weight:700;color:#065f46;letter-spacing:1px;">?뮕 吏곸썝 嫄댁쓽 ?꾪솴</span><span style="background:#6b7280;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:600;">?뾼 '+sgArchived.length+'</span></div>'
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">'
+    +'<div style="background:#fff;border-radius:8px;padding:8px 4px;text-align:center;"><div style="font-size:22px;font-weight:800;color:#1e293b;">'+sgTotal+'</div><div style="font-size:10px;color:#64748b;margin-top:2px;">?꾩껜</div></div>'
+    +'<div style="background:#fff;border-radius:8px;padding:8px 4px;text-align:center;"><div style="font-size:22px;font-weight:800;color:#f59e0b;">'+sgAct+'</div><div style="font-size:10px;color:#64748b;margin-top:2px;">吏꾪뻾以?/div></div>'
+    +'<div style="background:#fff;border-radius:8px;padding:8px 4px;text-align:center;"><div style="font-size:22px;font-weight:800;color:#10b981;">'+sgDone+'</div><div style="font-size:10px;color:#64748b;margin-top:2px;">諛섏쁺</div></div>'
+    +'</div></div>'
+    +'</div>';
+
+  html+='<div class="stat-sec"><div class="stat-title">?뱥 ?④퀎蹂??꾪솴</div><div class="stage-grid">'
+    +'<div class="stage-item"><div class="stage-nm">?뱿 ?묒닔 ?꾨즺</div><div class="stage-v" style="color:#1d4ed8">'+stageC.new+'</div></div>'
+    +'<div class="stage-item"><div class="stage-nm">?숋툘 泥섎━ 以?/div><div class="stage-v" style="color:#92400e">'+stageC.prog+'</div></div>'
+    +'<div class="stage-item"><div class="stage-nm">?슚 ?먯뒪而щ젅?댁뀡</div><div class="stage-v" style="color:#991b1b">'+stageC.esc2+'</div></div>'
+    +'<div class="stage-item"><div class="stage-nm">??泥섎━ ?꾨즺</div><div class="stage-v" style="color:#065f46">'+stageC.done+'</div></div>'
+    +'</div></div>';
+
+  html+='<div class="stat-sec"><div class="stat-title">?뤇 ?좏삎蹂?遺꾪룷</div>';
+  var typeOrder=['ord','pro','mem','prm','etc'];
+  var typeBarColors={ord:'#2563eb',pro:'#7c3aed',mem:'#059669',prm:'#d97706',etc:'#5a6a88'};
+  typeOrder.forEach(function(tp){
+    var cnt=typeC[tp]||0;
+    if(!cnt)return;
+    var pct=Math.round(cnt/total*100);
+    html+='<div class="bar-row"><div class="bar-lbl">'+TL[tp]+'</div>'
+      +'<div class="bar-wrap"><div class="bar-fill" style="width:'+(cnt/typeMax*100)+'%;background:'+typeBarColors[tp]+'"></div></div>'
+      +'<div class="bar-val">'+cnt+' <span style="font-size:10px;color:#94a3c0;">('+pct+'%)</span></div></div>';
+  });
+  html+='</div>';
+
+  // F1: SLA 以?섏쑉 ?뱀뀡
+  var dlCards=targetCards.filter(function(c){return c.deadline;});
+  var dlDone=done.filter(function(c){return c.deadline;});
+  var slaOk=dlDone.filter(function(c){return c.completedAt&&c.completedAt.slice(0,10)<=c.deadline;}).length;
+  var slaRate=dlDone.length>0?Math.round(slaOk/dlDone.length*100):0;
+  html+='<div class="stat-sec"><div class="stat-title">??SLA ?꾪솴</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">'
+    +'<div style="background:#f0f6ff;border-radius:8px;padding:10px 6px;text-align:center;"><div style="font-size:20px;font-weight:800;color:#1e293b;">'+dlCards.length+'</div><div style="font-size:10px;color:#64748b;margin-top:2px;">湲고븳?ㅼ젙</div></div>'
+    +'<div style="background:#dcfce7;border-radius:8px;padding:10px 6px;text-align:center;"><div style="font-size:20px;font-weight:800;color:#16a34a;">'+slaRate+'%</div><div style="font-size:10px;color:#64748b;margin-top:2px;">以?섏쑉</div></div>'
+    +'<div style="background:#fee2e2;border-radius:8px;padding:10px 6px;text-align:center;"><div style="font-size:20px;font-weight:800;color:#dc2626;">'+over.length+'</div><div style="font-size:10px;color:#64748b;margin-top:2px;">珥덇낵</div></div>'
+    +'<div style="background:#fef3c7;border-radius:8px;padding:10px 6px;text-align:center;"><div style="font-size:20px;font-weight:800;color:#d97706;">'+urg.length+'</div><div style="font-size:10px;color:#64748b;margin-top:2px;">湲닿툒吏꾪뻾以?/div></div>'
+    +'</div></div>';
+
+  // F3: ?됯퇏 泥섎━?쒓컙 ?뱀뀡
+  var elDone=done.filter(function(c){return c.created&&c.completedAt;});
+  if(elDone.length>0){
+    var totalMins=elDone.reduce(function(sum,c){return sum+Math.floor((new Date(c.completedAt)-new Date(c.created))/60000);},0);
+    var avgMins=Math.round(totalMins/elDone.length);
+    var avgD=Math.floor(avgMins/1440);var avgH=Math.floor((avgMins%1440)/60);var avgM=avgMins%60;
+    var avgLabel=avgD>0?avgD+'??'+avgH+'?쒓컙':avgH>0?avgH+'?쒓컙 '+avgM+'遺?:avgM+'遺?;
+    html+='<div class="stat-sec"><div class="stat-title">???됯퇏 泥섎━?쒓컙</div>'
+      +'<div style="background:#ede9fe;border-radius:10px;padding:14px 16px;text-align:center;">'
+      +'<div style="font-size:26px;font-weight:800;color:#7c3aed;">'+avgLabel+'</div>'
+      +'<div style="font-size:11px;color:#a78bfa;margin-top:4px;">?꾨즺 '+elDone.length+'嫄?湲곗?</div>'
+      +'</div></div>';
+  }
+
+  // 嫄댁쓽 移댄뀒怨좊━ 遺꾪룷
+  var sgCatC={sys:0,ops:0,env:0,etc:0};
+  sgCards.forEach(function(c){sgCatC[c.cat]=(sgCatC[c.cat]||0)+1;});
+  var sgCatMax=Math.max.apply(null,Object.values(sgCatC).concat([1]));
+  var sgCatColors={sys:'#6366f1',ops:'#f59e0b',env:'#10b981',etc:'#94a3b8'};
+  var sgCatLabels={sys:'?쒖뒪??,ops:'?낅Т',env:'?섍꼍',etc:'湲고?'};
+  html+='<div class="stat-sec"><div class="stat-title">?뮕 吏곸썝 嫄댁쓽 遺꾪룷</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
+  ['sys','ops','env','etc'].forEach(function(cat){
+    var cnt=sgCatC[cat]||0;
+    var pct=sgTotal>0?Math.round(cnt/sgTotal*100):0;
+    var barW=cnt>0?Math.round(cnt/sgCatMax*100):0;
+    html+='<div style="background:#f8fafc;border-radius:10px;padding:10px 12px;">'
+      +'<div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px;">'+sgCatLabels[cat]+'</div>'
+      +'<div style="height:7px;background:#e2e8f0;border-radius:4px;overflow:hidden;margin-bottom:5px;">'
+      +'<div style="height:100%;width:'+barW+'%;background:'+sgCatColors[cat]+';border-radius:4px;transition:width .4s;"></div></div>'
+      +'<div style="font-size:13px;font-weight:700;color:#1e293b;">'+cnt+'<span style="font-size:10px;font-weight:400;color:#94a3c0;margin-left:4px;">'+( cnt>0 ? pct+'%' : '' )+'</span></div>'
+      +'</div>';
+  });
+  html+='</div></div>';
+
+  bd.innerHTML=html;
+}
+
+
+// ?? ??湲곌컙 ?꾪꽣 ??
+function getDateFilteredCards(){
+  if(!dateFilter.from && !dateFilter.to) return cards;
+  return cards.filter(function(c){
+    var cd=c.created||(c.id?'':'');
+    if(!cd) return true; // ?깅줉???놁쑝硫??ы븿
+    if(dateFilter.from && cd < dateFilter.from) return false;
+    if(dateFilter.to && cd > dateFilter.to) return false;
+    return true;
+  });
+}
+function updateFilterBtnState(){
+  var btn=document.getElementById('btnDateFilter');
+  var hasFilter=dateFilter.from||dateFilter.to;
+  if(hasFilter){
+    btn.classList.add('active');
+    var parts=[];
+    if(dateFilter.from) parts.push(dateFilter.from.slice(5).replace('-','/'));
+    if(dateFilter.to) parts.push(dateFilter.to.slice(5).replace('-','/'));
+    btn.textContent='?뱟 '+parts.join(' ~ ');
+  } else {
+    btn.classList.remove('active');
+    btn.textContent='?뱟 湲곌컙 ?꾪꽣';
+  }
+}
+function syncDateBadge(){
+  var badge=document.getElementById('date-badge');
+  if(dateFilter.from||dateFilter.to){
+    var txt='?곸슜 以? ';
+    if(dateFilter.from&&dateFilter.to) txt+=dateFilter.from+' ~ '+dateFilter.to;
+    else if(dateFilter.from) txt+=dateFilter.from+' ?댄썑';
+    else txt+=dateFilter.to+' ?댁쟾';
+    var filtered=getDateFilteredCards();
+    txt+=' (珥?'+filtered.length+'嫄?';
+    badge.textContent=txt;badge.classList.add('show');
+  } else {
+    badge.textContent='';badge.classList.remove('show');
+  }
+}
+function setPreset(preset){
+  var now=new Date();
+  var y=now.getFullYear(),m=now.getMonth(),d=now.getDate();
+  var from='',to=tod();
+  if(preset==='today'){ from=tod(); }
+  else if(preset==='week'){
+    var day=now.getDay();
+    var mon=new Date(now); mon.setDate(d-((day+6)%7));
+    from=mon.toISOString().slice(0,10);
+  }
+  else if(preset==='month'){
+    from=y+'-'+String(m+1).padStart(2,'0')+'-01';
+  }
+  else if(preset==='last7'){
+    var d7=new Date(now); d7.setDate(d-6);
+    from=d7.toISOString().slice(0,10);
+  }
+  else if(preset==='last30'){
+    var d30=new Date(now); d30.setDate(d-29);
+    from=d30.toISOString().slice(0,10);
+  }
+  else if(preset==='last90'){
+    var d90=new Date(now); d90.setDate(d-89);
+    from=d90.toISOString().slice(0,10);
+  }
+  document.getElementById('date-from').value=from;
+  document.getElementById('date-to').value=to;
+  document.querySelectorAll('#ov-date .dps').forEach(function(el){el.classList.remove('on');});
+  document.querySelector('#ov-date [data-preset="'+preset+'"]').classList.add('on');
+  syncDateBadge();
+}
+document.getElementById('btnDateFilter').addEventListener('click',function(){
+  document.getElementById('date-from').value=dateFilter.from||'';
+  document.getElementById('date-to').value=dateFilter.to||'';
+  document.querySelectorAll('#ov-date .dps').forEach(function(el){el.classList.remove('on');});
+  syncDateBadge();
+  document.getElementById('ov-date').classList.add('open');
+});
+document.getElementById('btnDateCl').addEventListener('click',function(){document.getElementById('ov-date').classList.remove('open');});
+document.getElementById('ov-date').addEventListener('click',function(e){if(e.target===this)document.getElementById('ov-date').classList.remove('open');});
+document.querySelectorAll('#ov-date .dps').forEach(function(el){
+  el.addEventListener('click',function(){setPreset(el.dataset.preset);});
+});
+document.getElementById('date-from').addEventListener('change',function(){
+  document.querySelectorAll('#ov-date .dps').forEach(function(el){el.classList.remove('on');});
+  syncDateBadge();
+});
+document.getElementById('date-to').addEventListener('change',function(){
+  document.querySelectorAll('#ov-date .dps').forEach(function(el){el.classList.remove('on');});
+  syncDateBadge();
+});
+document.getElementById('btnDateApply').addEventListener('click',function(){
+  dateFilter.from=document.getElementById('date-from').value||'';
+  dateFilter.to=document.getElementById('date-to').value||'';
+  updateFilterBtnState();
+  document.getElementById('ov-date').classList.remove('open');
+  var cnt=getDateFilteredCards().length;
+  if(dateFilter.from||dateFilter.to) toast('?뱟 湲곌컙 ?꾪꽣 ?곸슜 ??'+cnt+'嫄??대떦','ok');
+  else toast('?뱟 湲곌컙 ?꾪꽣 ?댁젣','ok');
+});
+document.getElementById('btnDateReset').addEventListener('click',function(){
+  dateFilter={from:'',to:''};
+  document.getElementById('date-from').value='';
+  document.getElementById('date-to').value='';
+  document.querySelectorAll('#ov-date .dps').forEach(function(el){el.classList.remove('on');});
+  syncDateBadge();
+  updateFilterBtnState();
+  document.getElementById('ov-date').classList.remove('open');
+  toast('?뱟 湲곌컙 ?꾪꽣 ?댁젣','ok');
+});
+document.getElementById('btnDateClear2').addEventListener('click',function(){
+  document.getElementById('date-from').value='';
+  document.getElementById('date-to').value='';
+  document.querySelectorAll('#ov-date .dps').forEach(function(el){el.classList.remove('on');});
+  syncDateBadge();
+  toast('?뱟 湲곌컙 ?꾪꽣 珥덇린??);
+});
+
+// ?? ???묒?(CSV) ?대낫?닿린 ??
+function exportXlsx(dataCards, prefix){
+  var headers=['?묒닔??,'ID','嫄곕옒泥섎챸','嫄곕옒泥섏퐫??,'?좏삎','?묒닔梨꾨꼸','?쒕ぉ','?곸꽭?댁슜','?곗꽑?쒖쐞','?④퀎','泥섎━湲고븳','?꾨즺??,'?뚯슂?쒓컙','蹂닿???,'?대젰??];
+  var rows=dataCards.map(function(c){
+    return [
+      c.created||'',
+      '#CS-'+String(c.id).padStart(4,'0'),
+      c.co,c.cc||'',TL[c.tp]||c.tp,CHL[c.ch]||c.ch||'?꾪솕',c.ti,
+      (c.ds||'').replace(/\n/g,' '),
+      PL[c.pr]||c.pr,
+      SL[c.st]||c.st,
+      c.deadline||'',
+      c.completedAt||'',
+      c.elapsed||'',
+      c.archivedAt||'',
+      (c.logs?c.logs.length:0)
+    ].map(function(v){return '"'+String(v).replace(/"/g,'""')+'"';}).join(',');
+  });
+  var csv='\uFEFF'+headers.join(',')+'\n'+rows.join('\n');
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  var now=new Date();
+  var allDatesA=dataCards.map(function(c){return c.created||'';}).filter(Boolean).sort();
+  var todayA=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  var todayCA=now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0');
+  var afrom=allDatesA.length?allDatesA[0]:todayA;
+  var ato=allDatesA.length?allDatesA[allDatesA.length-1]:todayA;
+  var fn=(prefix||'?좏븳??CS?곷떞_')+todayCA+'_'+afrom+'~'+ato+'.csv';
+  a.download=fn;a.click();URL.revokeObjectURL(a.href);
+  toast('?뱫 ?묒?(CSV) ????꾨즺 ('+dataCards.length+'嫄?','ok');
+}
+document.getElementById('btnXlsx').addEventListener('click',function(){
+  var filtered=getDateFilteredCards();
+  var now=new Date();
+  function fmtD(d){return d?d.replace(/\//g,'-'):null;}
+  function todayStr(){return now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');}
+  function todayCompact(){return now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0');}
+  // 湲곌컙 踰붿쐞 怨꾩궛
+  var allDates=filtered.map(function(c){return c.created||'';}).filter(Boolean).sort();
+  var rangeFrom=fmtD(dateFilter.from)||(allDates.length?allDates[0]:todayStr());
+  var rangeTo=fmtD(dateFilter.to)||(allDates.length?allDates[allDates.length-1]:todayStr());
+  // ?꾩뭅?대툕 移대뱶 ?ы븿 (湲곌컙 ?꾪꽣 ?곸슜)
+  var arcFiltered=archived.filter(function(c){
+    if(!c.created)return true;
+    var cd=c.created.slice(0,10);
+    if(dateFilter.from&&cd<dateFilter.from)return false;
+    if(dateFilter.to&&cd>dateFilter.to)return false;
+    return true;
+  });
+  var allCards=filtered.concat(arcFiltered);
+  allCards.sort(function(a,b){return (a.created||'').localeCompare(b.created||'');});
+  var allDatesAll=allCards.map(function(c){return c.created||'';}).filter(Boolean).sort();
+  var rangeFromAll=fmtD(dateFilter.from)||(allDatesAll.length?allDatesAll[0]:todayStr());
+  var rangeToAll=fmtD(dateFilter.to)||(allDatesAll.length?allDatesAll[allDatesAll.length-1]:todayStr());
+  var fn='?좏븳??CS?곷떞_'+todayCompact()+'_'+rangeFromAll+'~'+rangeToAll+'.csv';
+  var headers=['?묒닔??,'ID','嫄곕옒泥섎챸','嫄곕옒泥섏퐫??,'?좏삎','?묒닔梨꾨꼸','?쒕ぉ','?곸꽭?댁슜','?곗꽑?쒖쐞','?④퀎','泥섎━湲고븳','?꾨즺??,'?뚯슂?쒓컙','蹂닿???,'?대젰??];
+  function makeRow(c){
+    return [c.created||'','#CS-'+String(c.id).padStart(4,'0'),c.co,c.cc||'',TL[c.tp]||c.tp,CHL[c.ch]||c.ch||'?꾪솕',c.ti,(c.ds||'').replace(/\n/g,' '),PL[c.pr]||c.pr,SL[c.st]||c.st||'蹂닿?',c.deadline||'',c.completedAt||'',c.elapsed||'',c.archivedAt||'',(c.logs?c.logs.length:0)]
+      .map(function(v){return '"'+String(v).replace(/"/g,'""')+'"';}).join(',');
+  }
+  var rows=allCards.map(makeRow);
+  var csv='\uFEFF'+headers.join(',')+'\n'+rows.join('\n');
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=fn;a.click();URL.revokeObjectURL(a.href);
+  var msg='?뱫 ?묒?(CSV) ????꾨즺 (?쒖꽦 '+filtered.length+'嫄?+ 蹂닿? '+arcFiltered.length+'嫄?';
+  if(dateFilter.from||dateFilter.to)msg+=' 쨌 湲곌컙 ?꾪꽣 ?곸슜';
+  toast(msg,'ok');
+});
+
+// ?? JSON ?대낫?닿린/遺덈윭?ㅺ린 ??
+function exportJSON(){
+  var data=JSON.stringify({uid:uid,cards:cards,archived:archived,templates:templates,saved:new Date().toISOString()},null,2);
+  var blob=new Blob([data],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  var now=new Date();
+  a.download='kanban_'+now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'.json';
+  a.click();URL.revokeObjectURL(a.href);
+  toast('?뮶 JSON ????꾨즺','ok');
+}
+function importJSON(file){
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var d=JSON.parse(e.target.result);
+      if(!d||typeof d!=='object')throw new Error('?섎せ??JSON ?뺤떇');
+      if(!Array.isArray(d.cards))throw new Error('cards 諛곗뿴???놁뒿?덈떎');
+      d.cards.forEach(function(c){
+        if(!c.id||!c.ti)throw new Error('移대뱶???꾩닔 ?꾨뱶(id, ti)媛 ?놁뒿?덈떎');
+        if(!Array.isArray(c.logs))c.logs=[];
+      });
+      cards=d.cards;uid=d.uid||uid;
+      archived=Array.isArray(d.archived)?d.archived:[];
+      templates=Array.isArray(d.templates)?d.templates:DEFAULT_TPLS.slice();
+      saveLocal();render();updateArcCnt();
+      toast('?뱛 遺덈윭?ㅺ린 ?꾨즺 (移대뱶 '+cards.length+'媛?','ok');
+    }catch(er){toast('?좑툘 '+(er.message||'?뚯씪 ?뺤떇???щ컮瑜댁? ?딆뒿?덈떎'),'err');}
+  };
+  reader.readAsText(file);
+}
+document.getElementById('btnExport').addEventListener('click',exportJSON);
+document.getElementById('btnLoad').addEventListener('click',function(){document.getElementById('fileInput').click();});
+document.getElementById('fileInput').addEventListener('change',function(e){if(e.target.files[0])importJSON(e.target.files[0]);this.value='';});
+
+// ?? 留ㅻ돱???⑤꼸 ??
+function pc(icon,title,path,color){
+  return '<div style="background:#f0f4fa;border-left:3px solid '+color+';border-radius:0 7px 7px 0;padding:7px 10px;margin-bottom:5px">'
+    +'<div style="font-weight:700;color:'+color+';margin-bottom:2px;font-size:11px">'+icon+' '+title+'</div>'
+    +'<div style="color:#5a6a88;font-size:11px">'+path+'</div></div>';
+}
+function pathBlock(title,cards2){
+  return '<div class="pst" style="margin-top:16px">?뱛 '+title+'</div><div>'+cards2+'</div>';
+}
+var PD={
+  login:{t:'?뚯썝媛??/ 濡쒓렇??臾몄쓽',s:'2??쨌 ?좉퇋 嫄곕옒泥?媛??諛?濡쒓렇??遺덇? 泥섎━',
+    h:'<div class="pst">?뱥 媛???좎껌 ?덉감 (5?④퀎)</div><div class="ps"><div class="sn">1</div><div><strong>怨좉컼 ?묒냽</strong><br>pharm.yuhan.co.kr ???뚯썝媛????嫄곕옒泥??뺣낫 ?낅젰 ???좎껌</div></div><div class="ps"><div class="sn">2</div><div><strong>?좎껌 ?뺤씤</strong><br>愿由ъ옄 ???뚯썝 愿由????좉퇋 嫄곕옒泥??깅줉 愿由?/div></div><div class="ps"><div class="sn">3</div><div><strong>?대떦??諛곗젙</strong><br>吏?먃룹쁺???대떦??諛곗젙 ??"?대떦???뺤씤 硫붿떆吏 蹂대궡湲? ?대┃ ???뚮┝???먮룞 諛쒖넚</div></div><div class="ps"><div class="sn">4</div><div><strong>?뱀씤 泥섎━</strong><br>"?뱀씤" 踰꾪듉 ??ERP ?뱀씤 ?붿껌 ???꾨즺 ??怨좉컼 濡쒓렇??媛??/div></div><div class="ps"><div class="sn">5</div><div><strong>諛섎젮 泥섎━</strong><br>?뺣낫 ?ㅻ쪟 ??諛섎젮 ??怨좉컼 ?ъ젒?????뺣낫 ?섏젙 ?섏씠吏</div></div><div class="pst">?좑툘 濡쒓렇??遺덇? ?먯씤</div><div class="nb ni">?뱦 <strong>媛???뱀씤 誘몄셿猷?/strong> ??愿由ъ옄 ???좉퇋 嫄곕옒泥??깅줉 愿由ъ뿉???뱀씤 泥섎━</div><div class="nb nw">?뱦 <strong>二쇰Ц 遺덇? ?곹깭</strong> ??愿由ъ옄 ???뚯썝 愿由???二쇰Ц媛???щ? 蹂寃?/div><div class="nb ni">?뱦 <strong>鍮꾨?踰덊샇 ?ㅻ쪟</strong> ??濡쒓렇???섏씠吏 鍮꾨?踰덊샇 李얘린 ?덈궡</div><div class="nb nw">?뱦 <strong>諛섎젮 ?곹깭</strong> ???뺣낫 ?섏젙 ???ъ떊泥??덈궡</div>'
+    +pathBlock('愿由ъ옄 寃쎈줈 ?덈궡',pc('?뫀','?좉퇋 嫄곕옒泥?媛???뱀씤','?뚯썝 愿由???<strong>?좉퇋 嫄곕옒泥??깅줉 愿由?/strong>','#003087')+pc('?뫁','?뚯썝 二쇰Ц媛???щ? 蹂寃?,'?뚯썝 愿由????뚯썝 愿由????대떦 ?뚯썝 ?좏깮 ??<strong>[二쇰Ц媛???щ?]</strong>','#0066CC')+pc('?룫','?좏븳議??ㅼ젙','?뚯썝 愿由????뚯썝 愿由????대떦 ?뚯썝 ?좏깮 ??<strong>[?좏븳議??щ?]</strong>','#10b981')+pc('?숋툘','愿由ъ옄 怨꾩젙 ?깅줉','?쒖뒪??愿由???愿由ъ옄 ?ㅼ젙 ??<strong>?ъ슜??愿由?/strong>','#7c3aed'))},
+  order:{t:'二쇰Ц 쨌 痍⑥냼 쨌 ?ш껐??,s:'3??쨌 二쇰Ц 愿??CS 泥섎━ ?덉감',
+    h:'<div class="pst">?벀 二쇰Ц 痍⑥냼 泥섎━</div><div class="nb nw">?좑툘 <strong>寃곗젣?꾨즺 ?곹깭?먯꽌留?痍⑥냼 媛??</strong> 諛곗넚以뫢룸같?≪셿猷??곹깭?먯꽌??痍⑥냼 踰꾪듉???몄텧?섏? ?딆뒿?덈떎.</div><div class="ps"><div class="sn">1</div><div>愿由ъ옄 ??二쇰Ц/諛섑뭹 ??二쇰Ц 愿由?/div></div><div class="ps"><div class="sn">2</div><div>?대떦 二쇰Ц 寃?????곹뭹紐??대┃ ???곸꽭 ?앹뾽</div></div><div class="ps"><div class="sn">3</div><div>[二쇰Ц痍⑥냼] 踰꾪듉 ?대┃ (寃곗젣?꾨즺 ?쒕쭔 ?몄텧)</div></div><div class="ps"><div class="sn">4</div><div>痍⑥냼 ?ъ쑀 ?낅젰 ??[蹂대궡湲? ???뚮┝???먮룞 諛쒖넚</div></div><div class="pst">?봽 ?ш껐???붿껌</div><div class="nb ni">?뱦 <strong>二쇰Ц?쇰줈遺???????대궡</strong>??二쇰Ц嫄댁뿉留??ш껐??踰꾪듉???몄텧?⑸땲??</div><div class="ps"><div class="sn">1</div><div>二쇰Ц ?곸꽭 ?앹뾽 ??[?ш껐?? 踰꾪듉</div></div><div class="ps"><div class="sn">2</div><div>嫄곕옒泥섎챸쨌湲덉븸 ?뺤씤 ??寃곗젣 湲고븳 ?ㅼ젙</div></div><div class="ps"><div class="sn">3</div><div>[?ш껐???붿껌] ???꾨줎?몄뿉 ?앹뾽 ?먮룞 ?몄텧</div></div>'
+    +pathBlock('愿由ъ옄 寃쎈줈 ?덈궡',pc('?뱥','二쇰Ц 議고쉶 / 痍⑥냼 / ?ш껐??,'二쇰Ц/諛섑뭹 ??<strong>二쇰Ц 愿由?/strong> ???곹뭹紐??대┃ ???곸꽭 ?앹뾽','#003087')+pc('?뱤','?곸뾽 愿由?(遺?쒕퀎 二쇰Ц ?꾪솴)','二쇰Ц/諛섑뭹 ??<strong>?곸뾽 愿由?/strong>','#0066CC'))},
+  ret:{t:'諛섑뭹 泥섎━ ?먮쫫',s:'4??쨌 諛섑뭹 ?댁뿭 ?뺤씤 諛?泥섎━',
+    h:'<div class="pst">?뵇 諛섑뭹 ?댁뿭 ?뺤씤</div><div class="psc">寃쎈줈: 愿由ъ옄 ??二쇰Ц/諛섑뭹 ??諛섑뭹 愿由?br>諛섑뭹 ?좎껌?셋룸컲?덈쾲?맞룰굅?섏쿂紐끒룹퐫?쒕줈 寃??br>?곹뭹紐??대┃ ??<strong>?섍툒?? ?곹뭹 ?뺣낫, 諛섑뭹 ?좎껌??/strong> ?뺤씤</div><div class="pst">?뱥 諛섑뭹 泥섎━ ?④퀎</div><div class="ps"><div class="sn">1</div><div><strong>嫄곕옒泥?/strong>: ?꾨줎?몄뿉??諛섑뭹 ?좎껌</div></div><div class="ps"><div class="sn">2</div><div><strong>愿由ъ옄</strong>: 諛섑뭹 愿由ъ뿉???좎껌 ?댁뿭 ?뺤씤</div></div><div class="ps"><div class="sn">3</div><div><strong>愿由ъ옄</strong>: ?섍툒?≤룹긽???뺣낫 ?뺤씤 ???대? 泥섎━ ?덉감 吏꾪뻾</div></div>'
+    +pathBlock('愿由ъ옄 寃쎈줈 ?덈궡',pc('?봽','諛섑뭹 ?댁뿭 議고쉶','二쇰Ц/諛섑뭹 ??<strong>諛섑뭹 愿由?/strong> ???곹뭹紐??대┃ ???곸꽭 ?앹뾽','#7c3aed')+pc('?뮥','?섍툒???뺤씤','諛섑뭹 ?곸꽭 ?앹뾽 ??<strong>?섍툒??諛??곹뭹 ?뺣낫</strong> ?뺤씤','#0066CC'))},
+  product:{t:'?곹뭹 誘몃끂異?泥댄겕由ъ뒪??,s:'5??쨌 ?곹뭹 誘몃끂異??먯씤 吏꾨떒',
+    h:'<div class="pst">??誘몃끂異??먯씤 泥댄겕由ъ뒪??/div><div class="nb ni">?뱦 <strong>?먮ℓ ?곹깭</strong> ???곹뭹 愿由????먮ℓ?곹깭 ?뺤씤 (?먮ℓ以묒? ??誘몃끂異?</div><div class="nb ni">?뱦 <strong>?꾩떆 ?몄텧 ?ㅼ젙</strong> ???곹뭹 愿由????꾩떆?몄텧 ?ㅼ젙 ?뺤씤</div><div class="nb nw">?뱦 <strong>?몄텧?쒖쇅 嫄곕옒泥?/strong> ???곹뭹 愿由????몄텧?쒖쇅 嫄곕옒泥????뺤씤</div><div class="nb nw">?뱦 <strong>??ℓ???щ?</strong> ???곹뭹 愿由?????ℓ 嫄곕옒泥???뿉???대떦 嫄곕옒泥?誘명룷????誘몃끂異?/div><div class="nb ni">?뱦 <strong>移댄뀒怨좊━ 誘몃같??/strong> ???곹뭹 愿由???湲곕낯?뺣낫 ??뿉??移댄뀒怨좊━ 諛곗젙 ?щ? ?뺤씤</div><div class="pst">?뮥 媛寃?/ ?ш퀬 臾몄쓽</div><div class="nb nd">?좑툘 ?먮ℓ媛/?곸슜媛??ERP ?곕룞 ??ぉ?쇰줈 <strong>愿由ъ옄?먯꽌 ?섏젙 遺덇?</strong>. ERP ?대떦 遺?쒖뿉 ?붿껌?섏꽭??</div><div class="psc">二쇰Ц媛???섎웾 = ?ш퀬 ???덉쟾?ш퀬</div>'
+    +pathBlock('愿由ъ옄 寃쎈줈 ?덈궡',pc('?뭻','?곹뭹 湲곕낯?뺣낫 (?먮ℓ?곹깭쨌?몄텧쨌?ш퀬)','?곹뭹 ???곹뭹 愿由????대떦 ?곹뭹 ?대┃ ??<strong>湲곕낯?뺣낫 ??/strong>','#003087')+pc('?슟','?몄텧?쒖쇅 嫄곕옒泥??ㅼ젙','?곹뭹 ???곹뭹 愿由????대떦 ?곹뭹 ??<strong>?몄텧?쒖쇅 嫄곕옒泥???/strong>','#ef4444')+pc('?봺','??ℓ 嫄곕옒泥??ㅼ젙','?곹뭹 ???곹뭹 愿由????대떦 ?곹뭹 ??<strong>??ℓ 嫄곕옒泥???/strong>','#f59e0b')+pc('?뱛','移댄뀒怨좊━ 愿由?,'?곹뭹 ??<strong>移댄뀒怨좊━ 愿由?/strong>','#0066CC')+pc('?뵮','?쏀븰?뺣낫 ?곕룞','?곹뭹 ???곹뭹 愿由????대떦 ?곹뭹 ??<strong>?쏀븰?뺣낫 ??/strong>','#10b981'))},
+  promo:{t:'湲고쉷??/ ?⑹궛?좎씤',s:'6??쨌 ?꾨줈紐⑥뀡 愿??CS 泥섎━',
+    h:'<div class="pst">?뱥 ?⑹궛?좎씤 ?덈궡</div><div class="nb ni">?⑹궛?좎씤? <strong>ERP ?곗씠?곗? ?먮룞 ?곕룞</strong>?⑸땲?? ???⑥쐞 ?낅뜲?댄듃, 蹂寃??곗씠???덉쓣 寃쎌슦 誘몃끂異쒕줈 ?깅줉?⑸땲??</div><div class="psc" style="margin-top:6px">???⑹궛?좎씤 ?뺣낫??ERP 湲곗?, 留ㅼ썡 ?먮룞 媛깆떊<br>???곸슜 湲곌컙? ???⑥쐞?대ŉ ?섏젙 遺덇?<br>???⑹궛?좎씤 ?명듃紐?諛??ㅻ챸 臾멸뎄???섏젙 媛??/div><div class="pst">?럞 ?쇰컲 湲고쉷??誘몃끂異?泥댄겕</div><div class="ps"><div class="sn">1</div><div>湲고쉷???몄텧 ?щ? ?뺤씤 (愿由ъ옄 ??湲고쉷??愿由????몄텧 ?щ?)</div></div><div class="ps"><div class="sn">2</div><div>湲고쉷???곸슜 湲곌컙 ?뺤씤 (湲곌컙 留뚮즺 ??誘몃끂異?</div></div><div class="ps"><div class="sn">3</div><div>湲고쉷?????곹뭹 ?깅줉 ?щ? ?뺤씤</div></div>'
+    +pathBlock('愿由ъ옄 寃쎈줈 ?덈궡',pc('?뱤','?⑹궛?좎씤 愿由?(ERP ?먮룞?곕룞)','?꾩떆/?꾨줈紐⑥뀡 ??湲고쉷??愿由???<strong>?⑹궛?좎씤 愿由?/strong>','#003087')+pc('?럞','?쇰컲 湲고쉷??愿由?,'?꾩떆/?꾨줈紐⑥뀡 ??湲고쉷??愿由???<strong>?쇰컲 湲고쉷??愿由?/strong>','#0066CC')+pc('?뤇','釉뚮옖?쒓? 愿由?,'?꾩떆/?꾨줈紐⑥뀡 ???꾩떆 愿由???<strong>釉뚮옖?쒓? 愿由?/strong>','#7c3aed')+pc('?넅','?좎젣?덇? 愿由?,'?꾩떆/?꾨줈紐⑥뀡 ???꾩떆 愿由???<strong>?좎젣?덇? 愿由?/strong>','#10b981')+pc('?럦','?대깽??愿由?,'?꾩떆/?꾨줈紐⑥뀡 ???대깽???먮즺??愿由???<strong>?대깽??愿由?/strong>','#f59e0b'))},
+  esc:{t:'?먯뒪而щ젅?댁뀡 湲곗?',s:'10??쨌 利됱떆 ?곸쐞 蹂닿퀬 耳?댁뒪',
+    h:'<div class="nb nd" style="margin-bottom:9px">?슚 ?꾨옒 耳?댁뒪???낅떒?곸쑝濡?泥섎━?섏? ?딄퀬 <strong>利됱떆 ?쒖뒪???대떦???蹂닿퀬</strong>?섏떗?쒖삤.</div><div class="pst">?뵶 利됱떆 ?먯뒪而щ젅?댁뀡 ???/div><div class="nb nd">?뮙 <strong>ERP ?곕룞 ?ㅻ쪟</strong> ??ERP ?대떦 遺??利됱떆 ?곕씫</div><div class="nb nd">?뮩 <strong>寃곗젣 ?댁쨷 泥?뎄 ?섏떖</strong> ???쒖뒪???대떦? 諛??щТ? 利됱떆 蹂닿퀬</div><div class="nb nd">?뵑 <strong>媛쒖씤?뺣낫 ?좎텧 ?섏떖</strong> ??蹂댁븞? 利됱떆 蹂닿퀬 諛?利앷굅 蹂댁쟾</div><div class="nb nd">?썞 <strong>?꾩껜 ?묒냽 遺덇?</strong> ??IT ?명봽?쇳? 利됱떆 ?곕씫</div><div class="nb nd">?뱤 <strong>?⑹궛?좎씤 ?곗씠??????ㅻ쪟</strong> ??ERP ?대떦 遺???곕씫</div><div class="pst">?슟 愿由ъ옄 泥섎━ 遺덇? ??ぉ</div><div class="nb nw">?곹뭹 媛寃?吏곸젒 ?섏젙 ??ERP ?대떦 遺???붿껌</div><div class="nb nw">?⑹궛?좎씤 由ъ뒪?맞룹쟻?⑷린媛??섏젙 ??ERP ?섏젙 ???먮룞 諛섏쁺</div><div class="nb nw">?곸뾽 議곗쭅 援ъ“ 蹂寃???ERP ?섏젙 ???먮룞 諛섏쁺</div>'
+    +pathBlock('愿由ъ옄 寃쎈줈 ?덈궡',pc('?뱷','1:1 臾몄쓽 ?듬?','?⑤씪?몃ぐ ?댁쁺 ??<strong>1:1 臾몄쓽 愿由?/strong>','#003087')+pc('?뱼','怨듭??ы빆 ?깅줉','?⑤씪?몃ぐ ?댁쁺 ??<strong>怨듭??ы빆 愿由?/strong>','#0066CC')+pc('??,'FAQ 愿由?,'?⑤씪?몃ぐ ?댁쁺 ??<strong>FAQ 愿由?/strong>','#7c3aed')+pc('?뵇','愿由ъ옄 濡쒓렇 議고쉶','?쒖뒪??愿由???<strong>濡쒓렇 愿由?/strong>','#94a3c0')+pc('?숋툘','?섍꼍?ㅼ젙 (理쒖냼二쇰Ц쨌?좏븳議는룹븣由쇳넚)','?쒖뒪??愿由????섍꼍?ㅼ젙 ??<strong>湲곕낯?ㅼ젙</strong>','#10b981'))},
+  img:{t:'?대?吏 ?깅줉 洹쒓꺽',s:'遺濡?B 쨌 諛곕꼫 / ?곹뭹 ?대?吏 ?ъ씠利?,
+    h:'<div class="pst">?뼹 諛곕꼫蹂??대?吏 洹쒓꺽</div><table style="width:100%;border-collapse:collapse;font-size:11px"><tr style="background:#003087;color:#fff"><th style="padding:6px 8px;text-align:left">?좏삎</th><th style="padding:6px 8px;text-align:left">PC</th><th style="padding:6px 8px;text-align:left">MO</th></tr><tr style="background:#f8fbff"><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">硫붿씤 諛곕꼫</td><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">744횞496px</td><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">648횞520px</td></tr><tr><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">二쇰ぉ ?곹뭹 諛곕꼫</td><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">582횞646px</td><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">640횞440px</td></tr><tr style="background:#f8fbff"><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">??諛곕꼫 (1媛?</td><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">1194횞180px</td><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">648횞220px</td></tr><tr><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">??諛곕꼫 (2媛?</td><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">582횞180px</td><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">648횞220px</td></tr><tr style="background:#f8fbff"><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">怨듭??앹뾽</td><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">400횞460px</td><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">720횞480px</td></tr><tr><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">濡쒓렇??諛곌꼍</td><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">684횞650px</td><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">PC ?꾩슜</td></tr><tr style="background:#f8fbff"><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">?곹뭹 ?대?吏</td><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">800횞680px</td><td style="padding:6px 8px;border-bottom:1px solid #e2e8f5">怨듯넻</td></tr><tr><td style="padding:6px 8px">釉뚮옖?쒓?/?좎젣?덇?</td><td style="padding:6px 8px">1,194px(媛濡?</td><td style="padding:6px 8px">648px(媛濡?</td></tr></table><div style="margin-top:8px;font-size:11px;color:#5a6a88">紐⑤뱺 ?대?吏 ?뺤떇: jpg, png</div>'
+    +'<div class="pst" style="margin-top:16px">?뱛 諛곕꼫蹂?愿由ъ옄 ?깅줉 寃쎈줈</div>'
+    +pc('?뼹','硫붿씤 諛곕꼫','?꾩떆/?꾨줈紐⑥뀡 ???꾩떆 愿由???硫붿씤?붾㈃ 愿由???<strong>硫붿씤諛곕꼫 愿由?/strong>','#003087')
+    +pc('狩?,'二쇰ぉ ?곹뭹 諛곕꼫','?꾩떆/?꾨줈紐⑥뀡 ???꾩떆 愿由???硫붿씤?붾㈃ 愿由???<strong>湲고?諛곕꼫 愿由?/strong>','#0066CC')
+    +pc('??,'??諛곕꼫','?꾩떆/?꾨줈紐⑥뀡 ???꾩떆 愿由???硫붿씤?붾㈃ 愿由???湲고?諛곕꼫 愿由???<strong>??諛곕꼫</strong>','#0066CC')
+    +pc('?뵒','怨듭??앹뾽','?꾩떆/?꾨줈紐⑥뀡 ???꾩떆 愿由???硫붿씤?붾㈃ 愿由???<strong>怨듭??앹뾽 愿由?/strong>','#7c3aed')
+    +pc('?뭻','?곹뭹 ?대?吏','?곹뭹 ??<strong>?곹뭹 愿由?/strong> ???대떦 ?곹뭹 ?좏깮 ??湲곕낯?뺣낫 ??,'#10b981')
+    +pc('?뤇','釉뚮옖?쒓? ?꾨줈紐⑥뀡','?꾩떆/?꾨줈紐⑥뀡 ???꾩떆 愿由???<strong>釉뚮옖?쒓? 愿由?/strong>','#f59e0b')
+    +pc('?넅','?좎젣?덇? ?꾨줈紐⑥뀡','?꾩떆/?꾨줈紐⑥뀡 ???꾩떆 愿由???<strong>?좎젣?덇? 愿由?/strong>','#f59e0b')
+    +pc('?뵍','濡쒓렇??諛곌꼍','?쒖뒪??愿由????섍꼍?ㅼ젙 ??<strong>湲곕낯?ㅼ젙</strong> ??濡쒓렇??諛곌꼍 ?대?吏','#94a3c0')
+  }
+};
+function openP(k){var d=PD[k];if(!d)return;document.getElementById('ptit').textContent=d.t;document.getElementById('psub').textContent=d.s;document.getElementById('pbd').innerHTML=d.h;document.getElementById('panel').classList.add('open');}
+function closeP(){document.getElementById('panel').classList.remove('open');}
+document.getElementById('btnPcl').addEventListener('click',closeP);
+document.querySelectorAll('[data-panel]').forEach(function(el){el.addEventListener('click',function(){openP(el.dataset.panel);});});
+
+// ?? ?좎뒪????
+function toast(msg,cls){
+  var c=document.getElementById('tsts');var el=document.createElement('div');
+  el.className='tst'+(cls?' '+cls:'');el.textContent=msg;c.appendChild(el);
+  requestAnimationFrame(function(){el.classList.add('show');});
+  setTimeout(function(){el.classList.remove('show');setTimeout(function(){el.remove();},350);},2800);
+}
+
+// ?? ?ㅻ낫???⑥텞????
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    closeM();closeP();closeLog();
+    document.getElementById('ov-stat').classList.remove('open');
+    document.getElementById('ov-tpl').classList.remove('open');
+    document.getElementById('ov-arc').classList.remove('open');
+    document.getElementById('ov-date').classList.remove('open');
+    document.getElementById('ov-sg').classList.remove('open');
+    document.getElementById('ov-sg-arc').classList.remove('open');
+  }
+  if((e.ctrlKey||e.metaKey)&&e.key==='k'){
+    e.preventDefault();
+    if(curMode==='cs') openM('new');
+    else openSgM('new');
+  }
+});
+
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧
+// ?? 嫄댁쓽 紐⑤뱶 ?꾩껜 濡쒖쭅 ??
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧
+var curMode='cs';
+var sgCards=[];
+var sgArchived=[];
+var sgUid=200;
+var sgEditId=null;
+var sgDefCol='new';
+var sgDragId=null;
+var sgFilter='all';
+var SGSTORE='yuhan_kanban_sg_v1';
+
+// ?? 嫄댁쓽 ?덉씠釉?留???
+var SG_CAT_L={sys:'?뼢 ?쒖뒪??,ops:'?뱥 ?낅Т',env:'?룫 ?섍꼍',etc:'?뱦 湲고?'};
+var SG_CAT_C={sys:'bg-sys',ops:'bg-ops',env:'bg-env',etc:'bg-etc2'};
+var SG_PRI_L={hi:'?뵶 ?믪쓬',md:'?윞 蹂댄넻',lo:'?윟 ??쓬'};
+var SG_PRI_C={hi:'bg-hi',md:'bg-md',lo:'bg-lo'};
+var SG_PRI_K={hi:'kgu',md:'kgr',lo:'kgn'};
+var SG_ST_L={new:'?묒닔',review:'寃??以?,accept:'諛섏쁺',hold:'蹂대쪟'};
+
+// 嫄댁쓽 ?섑뵆 ?곗씠??var sgSamples=[
+  {id:sgUid++,dept:'?곸뾽1?',name:'?띻만??,cat:'sys',ti:'二쇰Ц ?뺤씤 ?붾㈃??嫄곕옒泥섏퐫??而щ읆 異붽? ?꾩슂',ds:'二쇰Ц 紐⑸줉?먯꽌 嫄곕옒泥섏퐫?쒓? 蹂댁씠吏 ?딆븘 ?뺤씤 ??遺덊렪??,pri:'hi',st:'new',created:tod(),logs:[]},
+  {id:sgUid++,dept:'臾쇰쪟?',name:'?듬챸',cat:'env',ti:'?щТ??蹂듯빀湲?援먯껜 ?붿껌',ds:'?꾩옱 蹂듯빀湲??명썑?붾줈 ??? 怨좎옣 諛쒖깮. 援먯껜 ?꾩슂',pri:'md',st:'review',created:addD(-5),logs:[{id:1,who:'珥앸Т?',txt:'援먯껜 寃??以? ?덉궛 ?뺤씤 ?꾩슂.',ts:getNow(),stage:'寃??以?}]},
+  {id:sgUid++,dept:'CS?',name:'?댁쁺??,cat:'ops',ti:'CS ?묐? ?쒖? ?ㅽ겕由쏀듃 ?낅뜲?댄듃 ?붿껌',ds:'理쒓렐 ERP 蹂寃쎌궗??씠 諛섏쁺?섏? ?딆? ?ㅽ겕由쏀듃媛 ?ъ슜?섍퀬 ?덉쓬',pri:'hi',st:'accept',created:addD(-10),logs:[{id:2,who:'CS???,txt:'諛섏쁺 寃곗젙. ?ㅽ겕由쏀듃 媛쒖젙 ?묒뾽 ?쒖옉.',ts:getNow(),stage:'諛섏쁺'}]},
+  {id:sgUid++,dept:'?곸뾽2?',name:'源泥좎닔',cat:'etc',ti:'? ?뚯떇 ?μ냼 異붿쿇',ds:'媛뺣궓 洹쇱쿂 30紐??섏슜 媛?ν븳 ?μ냼 異붿쿇 ?붿껌',pri:'lo',st:'hold',created:addD(-3),logs:[]}
+];
+
+function sgSaveLocal(){
+  try{localStorage.setItem(SGSTORE,JSON.stringify({sgUid:sgUid,sgCards:sgCards,sgArchived:sgArchived}));updateSbTime('sb-sg-update');}catch(e){toast('?좑툘 ????ㅽ뙣: 釉뚮씪?곗? ???怨듦컙??遺議깊빀?덈떎.','err');}
+}
+function sgLoadLocal(){
+  try{
+    var raw=localStorage.getItem(SGSTORE);
+    if(!raw)return false;
+    var d=JSON.parse(raw);
+    if(d&&Array.isArray(d.sgCards)){
+      sgCards=d.sgCards;sgUid=d.sgUid||sgUid;
+      sgArchived=Array.isArray(d.sgArchived)?d.sgArchived:[];
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+if(!sgLoadLocal()){
+  sgCards=sgSamples;
+  sgSaveLocal();
+}
+sgCards.forEach(function(c){if(!Array.isArray(c.logs))c.logs=[];if(!c.created)c.created=tod();});
+sgArchived.forEach(function(c){if(!Array.isArray(c.logs))c.logs=[];if(!c.created)c.created=tod();});
+
+// ?? 嫄댁쓽 ?뚮뜑 ??
+function sgRender(){
+  var q=(document.getElementById('sg-q').value||'').trim().toLowerCase();
+  var dateBase=sgGetDateFilteredCards(); // 湲곌컙?꾪꽣 癒쇱? ?곸슜
+  ['new','review','accept','hold'].forEach(function(col){
+    var bd=document.getElementById('sg-bd-'+col);
+    var ct=document.getElementById('sg-ct-'+col);
+    if(!bd||!ct)return;
+    var list=dateBase.filter(function(c){
+      return c.st===col
+        &&(sgFilter==='all'||c.cat===sgFilter)
+        &&(!q||(c.dept||'').toLowerCase().indexOf(q)>=0||(c.ti||'').toLowerCase().indexOf(q)>=0||(c.name||'').toLowerCase().indexOf(q)>=0||(c.ds||'').toLowerCase().indexOf(q)>=0);
+    });
+    ct.textContent=list.length;
+    if(!list.length){
+      if(col==='accept'){
+        bd.innerHTML='<div class="emp" style="color:#94a3c0;">?뾼 ?꾩뭅?대툕??<strong style="color:#10b981;">'+sgArchived.length+'</strong>媛?蹂닿? 以?/div>';
+      } else {
+        bd.innerHTML='<div class="emp">?벊 嫄댁쓽 ?놁쓬</div>';
+      }
+      return;
+    }
+    bd.innerHTML=list.map(function(c){
+      var lc=c.logs?c.logs.length:0;
+      return '<div class="card '+SG_PRI_K[c.pri||'lo']+'" draggable="true" data-sgid="'+c.id+'">'
+        +'<div class="ct"><span class="cid">#SG-'+String(c.id).padStart(4,'0')+'</span>'
+        +'<div class="bgs"><span class="b '+SG_CAT_C[c.cat||'etc']+'">'+SG_CAT_L[c.cat||'etc']+'</span>'
+        +'<span class="b '+SG_PRI_C[c.pri||'lo']+'">'+SG_PRI_L[c.pri||'lo']+'</span></div></div>'
+        +'<div class="ctit">'+esc(c.name||'?듬챸')+(c.dept?' <span style="font-size:10px;color:#94a3c0;">'+esc(c.dept)+'</span>':'')+'</div>'
+        +'<div style="font-size:11px;color:#5a6a88;margin:2px 0 4px;font-weight:500;">'+esc(c.ti)+'</div>'
+        +(c.ds?'<div class="cds">'+esc(c.ds)+'</div>':'')
+        +'<div class="cf"><span style="font-size:11px;color:#94a3c0;">?뱟 ?묒닔 '+esc(c.created||'')+'</span></div>'
+        +'<div class="card-meta">'
+        +(lc>0?'<span class="log-cnt" data-sglogid="'+c.id+'">?뮠 ?대젰 '+lc+'</span>':'<span class="log-cnt" data-sglogid="'+c.id+'" style="background:#f0f4fa;color:#94a3c0">?뮠 ?대젰</span>')
+        +'</div>'
+        +'<div class="cas">'
+        +'<button class="ca" data-sgedit="'+c.id+'" title="?섏젙">?륅툘</button>'
+        +(col==='accept'
+          ? '<button class="ca" data-sgarc="'+c.id+'" title="?꾩뭅?대툕濡??대룞" style="color:#10b981;">?뾼</button>'
+          : '<button class="ca dl" data-sgdel="'+c.id+'" title="??젣">?뿊</button>')
+        +'</div>'
+        +'</div>';
+    }).join('');
+    // ?대깽??    bd.querySelectorAll('.card').forEach(function(el){
+      el.addEventListener('dragstart',function(e){sgDragId=el.dataset.sgid;e.dataTransfer.effectAllowed='move';setTimeout(function(){el.classList.add('drg');},0);});
+      el.addEventListener('dragend',function(){el.classList.remove('drg');document.querySelectorAll('#board-sg .col').forEach(function(c){c.classList.remove('dov');});});
+    });
+    bd.querySelectorAll('[data-sgedit]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();sgEditCard(+b.dataset.sgedit);});});
+    bd.querySelectorAll('[data-sgdel]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();sgDelCard(+b.dataset.sgdel);});});
+    bd.querySelectorAll('[data-sgarc]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();sgArchiveCard(+b.dataset.sgarc);});});
+    bd.querySelectorAll('[data-sglogid]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();sgOpenLog(+b.dataset.sglogid);});});
+  });
+  // 嫄댁쓽 湲곌컙?꾪꽣 諛곕꼫
+  var sgBoard=document.getElementById('board-sg');
+  var sgBanner=document.getElementById('sg-filter-banner');
+  if(!sgBanner){
+    sgBanner=document.createElement('div');
+    sgBanner.id='sg-filter-banner';
+    sgBanner.style.cssText='display:none;background:#fffbeb;border:1px solid #f59e0b;border-radius:8px;padding:8px 14px;margin:0 0 10px 0;font-size:12px;color:#92400e;';
+    sgBoard.parentNode.insertBefore(sgBanner,sgBoard);
+  }
+  if(sgDateFilter.from||sgDateFilter.to){
+    var rl=(sgDateFilter.from||'?꾩껜')+' ~ '+(sgDateFilter.to||'?꾩껜');
+    sgBanner.innerHTML='?뱟 <strong>湲곌컙 ?꾪꽣 ?곸슜 以?</strong> '+rl+' 쨌 珥?'+dateBase.length+'嫄?;
+    sgBanner.style.display='block';
+  } else {
+    sgBanner.style.display='none';
+  }
+  sgStats();
+}
+
+// ?? 嫄댁쓽 湲곌컙 ?꾪꽣 ??
+function sgGetDateFilteredCards(){
+  if(!sgDateFilter.from && !sgDateFilter.to) return sgCards;
+  return sgCards.filter(function(c){
+    var cd=c.created||'';
+    if(!cd) return true;
+    if(sgDateFilter.from && cd < sgDateFilter.from) return false;
+    if(sgDateFilter.to && cd > sgDateFilter.to) return false;
+    return true;
+  });
+}
+function sgUpdateFilterBtnState(){
+  var btn=document.getElementById('btnSgDateFilter');
+  if(!btn) return;
+  var hasFilter=sgDateFilter.from||sgDateFilter.to;
+  if(hasFilter){
+    btn.classList.add('active');
+    var parts=[];
+    if(sgDateFilter.from) parts.push(sgDateFilter.from.slice(5).replace('-','/'));
+    if(sgDateFilter.to) parts.push(sgDateFilter.to.slice(5).replace('-','/'));
+    btn.textContent='?뱟 '+parts.join(' ~ ');
+  } else {
+    btn.classList.remove('active');
+    btn.textContent='?뱟 湲곌컙 ?꾪꽣';
+  }
+}
+function sgSyncDateBadge(){
+  var badge=document.getElementById('sg-date-badge');
+  if(!badge) return;
+  if(sgDateFilter.from||sgDateFilter.to){
+    var txt='?곸슜 以? ';
+    if(sgDateFilter.from&&sgDateFilter.to) txt+=sgDateFilter.from+' ~ '+sgDateFilter.to;
+    else if(sgDateFilter.from) txt+=sgDateFilter.from+' ?댄썑';
+    else txt+=sgDateFilter.to+' ?댁쟾';
+    var filtered=sgGetDateFilteredCards();
+    txt+=' (珥?'+filtered.length+'嫄?';
+    badge.textContent=txt; badge.classList.add('show');
+  } else {
+    badge.textContent=''; badge.classList.remove('show');
+  }
+}
+function sgSetPreset(preset){
+  var now=new Date();
+  var y=now.getFullYear(),m=now.getMonth(),d=now.getDate();
+  var from='',to=tod();
+  if(preset==='today'){ from=tod(); }
+  else if(preset==='week'){
+    var day=now.getDay();
+    var mon=new Date(now); mon.setDate(d-((day+6)%7));
+    from=mon.toISOString().slice(0,10);
+  }
+  else if(preset==='month'){
+    from=y+'-'+String(m+1).padStart(2,'0')+'-01';
+  }
+  else if(preset==='last7'){
+    var d7=new Date(now); d7.setDate(d-6);
+    from=d7.toISOString().slice(0,10);
+  }
+  else if(preset==='last30'){
+    var d30=new Date(now); d30.setDate(d-29);
+    from=d30.toISOString().slice(0,10);
+  }
+  else if(preset==='last90'){
+    var d90=new Date(now); d90.setDate(d-89);
+    from=d90.toISOString().slice(0,10);
+  }
+  document.getElementById('sg-date-from').value=from;
+  document.getElementById('sg-date-to').value=to;
+  document.querySelectorAll('#ov-sg-date .dps').forEach(function(el){el.classList.remove('on');});
+  document.querySelector('#ov-sg-date [data-sgpreset="'+preset+'"]').classList.add('on');
+  sgSyncDateBadge();
+}
+function sgStats(){
+  var act=sgCards.filter(function(c){return c.st!=='accept';});
+  var hi=act.filter(function(c){return c.pri==='hi';}).length;
+  var md=act.filter(function(c){return c.pri==='md';}).length;
+  var lo=act.filter(function(c){return c.pri==='lo';}).length;
+  document.getElementById('sg-pcnt').innerHTML=
+    '<div class="pr pu"><div class="pl">?뵶 ?믪쓬</div><div class="pn">'+hi+'</div></div>'
+    +'<div class="pr ph"><div class="pl">?윞 蹂댄넻</div><div class="pn">'+md+'</div></div>'
+    +'<div class="pr pn2"><div class="pl">?윟 ??쓬</div><div class="pn">'+lo+'</div></div>';
+  if(curMode==='sg'){
+    document.getElementById('hstats').innerHTML=
+      '<div class="sc"><div class="dot" style="background:#ef4444"></div>?믪쓬 '+hi+'</div>'
+      +'<div class="sc"><div class="dot" style="background:#f59e0b"></div>蹂댄넻 '+md+'</div>'
+      +'<div class="sc"><div class="dot" style="background:#3b8fe8"></div>吏꾪뻾以?'+act.length+'</div>';
+  }
+}
+
+// ?? 嫄댁쓽 湲곌컙 ?꾪꽣 ?대깽????
+document.getElementById('btnSgDateFilter').addEventListener('click',function(){
+  document.getElementById('sg-date-from').value=sgDateFilter.from||'';
+  document.getElementById('sg-date-to').value=sgDateFilter.to||'';
+  document.querySelectorAll('#ov-sg-date .dps').forEach(function(el){el.classList.remove('on');});
+  sgSyncDateBadge();
+  document.getElementById('ov-sg-date').classList.add('open');
+});
+document.getElementById('btnSgDateCl').addEventListener('click',function(){document.getElementById('ov-sg-date').classList.remove('open');});
+document.getElementById('ov-sg-date').addEventListener('click',function(e){if(e.target===this)document.getElementById('ov-sg-date').classList.remove('open');});
+document.querySelectorAll('#ov-sg-date .dps').forEach(function(el){
+  el.addEventListener('click',function(){sgSetPreset(el.dataset.sgpreset);});
+});
+document.getElementById('sg-date-from').addEventListener('change',function(){
+  document.querySelectorAll('#ov-sg-date .dps').forEach(function(el){el.classList.remove('on');});
+  sgSyncDateBadge();
+});
+document.getElementById('sg-date-to').addEventListener('change',function(){
+  document.querySelectorAll('#ov-sg-date .dps').forEach(function(el){el.classList.remove('on');});
+  sgSyncDateBadge();
+});
+document.getElementById('btnSgDateApply').addEventListener('click',function(){
+  sgDateFilter.from=document.getElementById('sg-date-from').value||'';
+  sgDateFilter.to=document.getElementById('sg-date-to').value||'';
+  sgUpdateFilterBtnState();
+  document.getElementById('ov-sg-date').classList.remove('open');
+  var cnt=sgGetDateFilteredCards().length;
+  if(sgDateFilter.from||sgDateFilter.to) toast('?뱟 湲곌컙 ?꾪꽣 ?곸슜 ??'+cnt+'嫄??대떦','ok');
+  else toast('?뱟 湲곌컙 ?꾪꽣 ?댁젣','ok');
+  sgRender();
+});
+document.getElementById('btnSgDateClear').addEventListener('click',function(){
+  sgDateFilter={from:'',to:''};
+  document.getElementById('sg-date-from').value='';
+  document.getElementById('sg-date-to').value='';
+  document.querySelectorAll('#ov-sg-date .dps').forEach(function(el){el.classList.remove('on');});
+  sgSyncDateBadge();
+  sgUpdateFilterBtnState();
+  document.getElementById('ov-sg-date').classList.remove('open');
+  sgRender();
+  toast('?뱟 湲곌컙 ?꾪꽣 ?댁젣','ok');
+});
+document.getElementById('btnSgDateReset').addEventListener('click',function(){
+  sgDateFilter={from:'',to:''};
+  document.getElementById('sg-date-from').value='';
+  document.getElementById('sg-date-to').value='';
+  document.querySelectorAll('#ov-sg-date .dps').forEach(function(el){el.classList.remove('on');});
+  sgSyncDateBadge();
+  sgUpdateFilterBtnState();
+  sgRender();
+  toast('?뱟 湲곌컙 ?꾪꽣 珥덇린??);
+});
+
+// ?? 嫄댁쓽 ?쒕옒洹몄븻?쒕∼ ??
+document.querySelectorAll('#board-sg .col').forEach(function(col){
+  var cid=col.id.replace('sg-col-','');
+  col.addEventListener('dragover',function(e){e.preventDefault();document.querySelectorAll('#board-sg .col').forEach(function(c){c.classList.remove('dov');});col.classList.add('dov');});
+  col.addEventListener('dragleave',function(e){if(!col.contains(e.relatedTarget))col.classList.remove('dov');});
+  col.addEventListener('drop',function(e){
+    e.preventDefault();col.classList.remove('dov');if(!sgDragId)return;
+    var card=sgCards.find(function(c){return c.id==sgDragId;});
+    if(card&&card.st!==cid){
+      var prev=card.st;card.st=cid;
+      if(!card.logs)card.logs=[];
+      card.logs.push({id:Date.now(),who:'?쒖뒪??,txt:SG_ST_L[prev]+' ??'+SG_ST_L[cid]+' ?쇰줈 ?④퀎 ?대룞',ts:getNow(),stage:SG_ST_L[cid]});
+      sgSaveLocal();sgRender();
+      toast('????'+SG_ST_L[cid],'ok');
+    }
+    sgDragId=null;
+  });
+});
+
+// ?? 嫄댁쓽 ?꾪꽣 ??
+document.querySelectorAll('[data-sg]').forEach(function(el){
+  el.addEventListener('click',function(){
+    sgFilter=el.dataset.sg;
+    document.querySelectorAll('[data-sg]').forEach(function(c){c.classList.remove('on');});
+    el.classList.add('on');sgRender();
+  });
+});
+document.getElementById('sg-q').addEventListener('input',function(){
+  var btn=document.querySelector('.search-clear[data-for="sg-q"]');
+  if(btn)btn.style.display=this.value?'block':'none';
+  sgRender();
+});
+
+// ?? 嫄댁쓽 CRUD ??
+function openSgM(col){
+  sgEditId=null;sgDefCol=col||'new';
+  document.getElementById('sg-mico').textContent='?뮕';
+  document.getElementById('sg-mttl').textContent='??嫄댁쓽 ?깅줉';
+  document.getElementById('sg-dept').value='';
+  document.getElementById('sg-name').value='';
+  document.getElementById('sg-cat').value='sys';
+  document.getElementById('sg-tit').value='';
+  document.getElementById('sg-desc').value='';
+  document.getElementById('sg-pri').value='lo';
+  document.getElementById('sg-st').value=col||'new';
+  document.getElementById('ov-sg').classList.add('open');
+  setTimeout(function(){document.getElementById('sg-name').focus();},200);
+}
+function sgEditCard(id){
+  var c=sgCards.find(function(x){return x.id===id;});if(!c)return;sgEditId=id;
+  document.getElementById('sg-mico').textContent='?륅툘';
+  document.getElementById('sg-mttl').textContent='嫄댁쓽 ?섏젙';
+  document.getElementById('sg-dept').value=c.dept||'';
+  document.getElementById('sg-name').value=c.name||'';
+  document.getElementById('sg-cat').value=c.cat||'sys';
+  document.getElementById('sg-tit').value=c.ti||'';
+  document.getElementById('sg-desc').value=c.ds||'';
+  document.getElementById('sg-pri').value=c.pri||'lo';
+  document.getElementById('sg-st').value=c.st||'new';
+  document.getElementById('ov-sg').classList.add('open');
+}
+function closeSgM(){document.getElementById('ov-sg').classList.remove('open');sgEditId=null;}
+document.getElementById('ov-sg').addEventListener('click',function(e){if(e.target===this)closeSgM();});
+document.getElementById('btnSgCnl').addEventListener('click',function(e){e.stopPropagation();closeSgM();});
+document.getElementById('btnSgSav').addEventListener('click',function(){
+  var dept=document.getElementById('sg-dept').value.trim();
+  var ti=document.getElementById('sg-tit').value.trim();
+  var nameVal=document.getElementById('sg-name').value.trim();
+  if(!nameVal){document.getElementById('sg-name').focus();toast('吏곸썝紐낆쓣 ?낅젰?섏꽭??,'err');return;}
+  if(!ti){document.getElementById('sg-tit').focus();toast('?쒕ぉ???낅젰?섏꽭??,'err');return;}
+  var d={dept:dept,name:nameVal,
+    cat:document.getElementById('sg-cat').value,
+    ti:ti,ds:document.getElementById('sg-desc').value.trim(),
+    pri:document.getElementById('sg-pri').value,
+    st:document.getElementById('sg-st').value};
+  if(sgEditId){
+    var c=sgCards.find(function(x){return x.id===sgEditId;});
+    if(!c.logs)c.logs=[];
+    c.logs.push({id:Date.now(),who:'愿由ъ옄',txt:'嫄댁쓽 ?뺣낫 ?섏젙',ts:getNow(),stage:SG_ST_L[d.st]});
+    Object.assign(c,d);toast('?섏젙?섏뿀?듬땲??,'ok');
+  } else {
+    d.id=sgUid++;d.logs=[];d.created=tod();
+    d.logs.push({id:Date.now(),who:'?쒖뒪??,txt:'嫄댁쓽 ?묒닔',ts:getNow(),stage:'?묒닔'});
+    sgCards.push(d);toast('嫄댁쓽媛 ?깅줉?섏뿀?듬땲??,'ok');
+  }
+  closeSgM();sgSaveLocal();sgRender();
+});
+document.getElementById('btnSgNew').addEventListener('click',function(){openSgM('new');});
+document.querySelectorAll('.sg-abtn').forEach(function(b){
+  b.addEventListener('click',function(e){
+    if(b.id==='btnSgArchiveAll')return;
+    openSgM(b.dataset.sgcol);
+  });
+});
+
+function sgDelCard(id){
+  var c=sgCards.find(function(x){return x.id===id;});if(!c)return;
+  showConfirm('"'+c.name+' 쨌 '+c.ti+'" 嫄댁쓽瑜???젣?섏떆寃좎뒿?덇퉴?','?뿊 ??젣',function(yes){
+    if(yes){sgCards=sgCards.filter(function(x){return x.id!==id;});sgSaveLocal();sgRender();toast('??젣?섏뿀?듬땲??);}
+  });
+}
+
+// ?? 嫄댁쓽 ?꾩뭅?대툕 ??
+function sgUpdateArcCnt(){
+  document.getElementById('sg-arc-cnt').textContent=sgArchived.length;
+}
+function sgArchiveCard(id){
+  var c=sgCards.find(function(x){return x.id===id;});if(!c)return;
+  c.logs.push({id:Date.now(),who:'?쒖뒪??,txt:'?꾩뭅?대툕濡??대룞',ts:getNow(),stage:SG_ST_L[c.st]});
+  c.archivedAt=tod();
+  sgArchived.push(c);
+  sgCards=sgCards.filter(function(x){return x.id!==id;});
+  sgSaveLocal();sgRender();sgUpdateArcCnt();
+  toast('?뾼 ?꾩뭅?대툕濡??대룞?덉뒿?덈떎','ok');
+}
+function sgArchiveAll(){
+  var doneCards=sgCards.filter(function(c){return c.st==='accept';});
+  if(!doneCards.length){toast('諛섏쁺 嫄댁쓽媛 ?놁뒿?덈떎');return;}
+  showConfirm('諛섏쁺 嫄댁쓽 '+doneCards.length+'嫄댁쓣 紐⑤몢 ?꾩뭅?대툕濡??대룞?섏떆寃좎뒿?덇퉴?','?뾼 ?대룞',function(yes){
+    if(yes){
+      var now=tod();var ts=getNow();
+      doneCards.forEach(function(c){
+        c.logs.push({id:Date.now(),who:'?쒖뒪??,txt:'?꾩뭅?대툕 ?쇨큵 ?대룞',ts:ts,stage:SG_ST_L[c.st]});
+        c.archivedAt=now;sgArchived.push(c);
+      });
+      sgCards=sgCards.filter(function(c){return c.st!=='accept';});
+      sgSaveLocal();sgRender();sgUpdateArcCnt();
+      toast('?뾼 '+doneCards.length+'嫄??꾩뭅?대툕 ?꾨즺','ok');
+    }
+  });
+}
+function sgRenderArcModal(){
+  var q=(document.getElementById('sg-arc-q').value||'').trim().toLowerCase();
+  var list=sgArchived.filter(function(c){
+    return !q||(c.dept||'').toLowerCase().indexOf(q)>=0||(c.ti||'').toLowerCase().indexOf(q)>=0||(c.name||'').toLowerCase().indexOf(q)>=0;
+  }).slice().reverse();
+  document.getElementById('sg-arc-sub').textContent='珥?'+sgArchived.length+'嫄?蹂닿? 以?+(q?' 쨌 寃??寃곌낵 '+list.length+'嫄?:'');
+  var bd=document.getElementById('sg-arc-bd');
+  if(!list.length){bd.innerHTML='<div class="arc-empty">?벊 '+(q?'寃??寃곌낵 ?놁쓬':'?꾩뭅?대툕媛 鍮꾩뼱?덉뒿?덈떎')+'</div>';return;}
+  bd.innerHTML=list.map(function(c){
+    var lc=c.logs?c.logs.length:0;
+    return '<div class="arc-row">'
+      +'<div class="arc-info">'
+      +'<div><span class="arc-co">'+esc(c.name||'?듬챸')+'</span><span class="arc-cc">'+esc(c.dept||'')+'</span></div>'
+      +'<div class="arc-ti">'+esc(c.ti)+'</div>'
+      +'<div class="arc-meta">'
+      +'<span class="b '+SG_CAT_C[c.cat||'etc']+'" style="font-size:10px;">'+SG_CAT_L[c.cat||'etc']+'</span>'
+      +'<span class="b '+SG_PRI_C[c.pri||'lo']+'" style="font-size:10px;">'+SG_PRI_L[c.pri||'lo']+'</span>'
+      +'<span class="arc-date">?뱟 ?묒닔 '+esc(c.created||'')+'</span>'
+      +(c.archivedAt?'<span class="arc-date">?뾼 蹂닿? '+esc(c.archivedAt)+'</span>':'')
+      +(lc?'<span class="arc-date">?뮠 ?대젰 '+lc+'嫄?/span>':'')
+      +'</div></div>'
+      +'<div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">'
+      +'<button class="arc-restore" data-sgrestore="'+c.id+'">??蹂듭썝</button>'
+      +'<button class="arc-del" data-sgperdel="'+c.id+'">?뿊 ??젣</button>'
+      +'</div></div>';
+  }).join('');
+  bd.querySelectorAll('[data-sgrestore]').forEach(function(b){b.addEventListener('click',function(){sgRestoreCard(+b.dataset.sgrestore);});});
+  bd.querySelectorAll('[data-sgperdel]').forEach(function(b){b.addEventListener('click',function(){sgPermDelete(+b.dataset.sgperdel);});});
+}
+function sgRestoreCard(id){
+  var c=sgArchived.find(function(x){return x.id===id;});if(!c)return;
+  c.logs.push({id:Date.now(),who:'?쒖뒪??,txt:'?꾩뭅?대툕?먯꽌 蹂듭썝??,ts:getNow(),stage:SG_ST_L[c.st]||'?묒닔'});
+  delete c.archivedAt;
+  sgCards.push(c);
+  sgArchived=sgArchived.filter(function(x){return x.id!==id;});
+  sgSaveLocal();sgRender();sgUpdateArcCnt();sgRenderArcModal();
+  toast('??蹂듭썝?섏뿀?듬땲??,'ok');
+}
+function sgPermDelete(id){
+  var c=sgArchived.find(function(x){return x.id===id;});if(!c)return;
+  showConfirm('"'+c.name+' 쨌 '+c.ti+'" ?곴뎄 ??젣?섏떆寃좎뒿?덇퉴?','?뿊 ?곴뎄??젣',function(yes){
+    if(yes){sgArchived=sgArchived.filter(function(x){return x.id!==id;});sgSaveLocal();sgUpdateArcCnt();sgRenderArcModal();toast('??젣?섏뿀?듬땲??);}
+  });
+}
+document.getElementById('btnSgArcView').addEventListener('click',function(){sgRenderArcModal();document.getElementById('ov-sg-arc').classList.add('open');});
+document.getElementById('btnSgArcCl').addEventListener('click',function(){document.getElementById('ov-sg-arc').classList.remove('open');});
+document.getElementById('ov-sg-arc').addEventListener('click',function(e){if(e.target===this)document.getElementById('ov-sg-arc').classList.remove('open');});
+document.getElementById('sg-arc-q').addEventListener('input',sgRenderArcModal);
+document.getElementById('btnSgArchiveAll').addEventListener('click',sgArchiveAll);
+document.getElementById('btnSgArcXlsx').addEventListener('click',function(){sgExportXlsx(sgArchived,'?좏븳??嫄댁쓽_?꾩뭅?대툕_');});
+
+// ?? 嫄댁쓽 ?대젰 ??
+var sgLogCardId=null;
+function sgOpenLog(id){
+  var c=sgCards.find(function(x){return x.id===id;});if(!c)return;
+  sgLogCardId=id;
+  document.getElementById('log-ttl').textContent='#SG-'+String(c.id).padStart(4,'0')+' 泥섎━ ?대젰';
+  document.getElementById('log-sub').textContent=(c.name||'?듬챸')+(c.dept?' ('+c.dept+')':'')+' 쨌 '+c.ti;
+  // 嫄댁쓽 ?대젰? CS ?대젰 紐⑤떖 ?ъ궗??(logCardId ???sgLogCardId濡?援щ텇)
+  var bd=document.getElementById('log-bd');
+  var logs=c.logs||[];
+  if(!logs.length){bd.innerHTML='<div class="log-empty">?벊 泥섎━ ?대젰???놁뒿?덈떎.</div>';}
+  else{
+    var html='';
+    logs.forEach(function(lg,i){
+      html+='<div class="log-item">'
+        +'<div class="log-line"><div class="log-dot"></div>'+(i<logs.length-1?'<div class="log-vl"></div>':'')+'</div>'
+        +'<div class="log-content">'
+        +'<div class="log-meta"><span class="log-who">'+esc(lg.who)+'</span><span class="log-time">'+esc(lg.ts)+'</span>'
+        +(lg.stage?'<span class="log-stage">'+esc(lg.stage)+'</span>':'')+'</div>'
+        +'<div class="log-txt">'+esc(lg.txt)+'</div>'
+        +'</div></div>';
+    });
+    bd.innerHTML=html;
+    bd.scrollTop=bd.scrollHeight;
+  }
+  document.getElementById('tpl-chips').innerHTML='';// 嫄댁쓽?먯꽌 ?쒗뵆由?移??④?
+  document.getElementById('ov-log').classList.add('open');
+}
+// ?대젰 異붽? 踰꾪듉 ??CS/嫄댁쓽 怨듭슜 泥섎━
+(function(){
+  var btn=document.getElementById('btnLogAdd');
+  btn.onclick=null;
+  btn.addEventListener('click',function(){
+    var who=document.getElementById('log-who-in').value.trim();
+    var txt=document.getElementById('log-txt-in').value.trim();
+    if(!txt){toast('?댁슜???낅젰?섏꽭??,'err');return;}
+    if(sgLogCardId&&curMode==='sg'){
+      var c=sgCards.find(function(x){return x.id===sgLogCardId;});if(!c)return;
+      if(!c.logs)c.logs=[];
+      c.logs.push({id:Date.now(),who:who||'?대떦??,txt:txt,ts:getNow(),stage:SG_ST_L[c.st]});
+      document.getElementById('log-txt-in').value='';
+      sgSaveLocal();sgRender();
+      var logs2=c.logs;
+      var bd2=document.getElementById('log-bd');
+      var html2='';
+      logs2.forEach(function(lg,i){
+        html2+='<div class="log-item"><div class="log-line"><div class="log-dot"></div>'+(i<logs2.length-1?'<div class="log-vl"></div>':'')+'</div>'
+          +'<div class="log-content"><div class="log-meta"><span class="log-who">'+esc(lg.who)+'</span><span class="log-time">'+esc(lg.ts)+'</span>'+(lg.stage?'<span class="log-stage">'+esc(lg.stage)+'</span>':'')+'</div>'
+          +'<div class="log-txt">'+esc(lg.txt)+'</div></div></div>';
+      });
+      bd2.innerHTML=html2;bd2.scrollTop=bd2.scrollHeight;
+      toast('?대젰 異붽???,'ok');
+    } else if(logCardId&&curMode==='cs'){
+      var c2=cards.find(function(x){return x.id===logCardId;});if(!c2)return;
+      if(!c2.logs)c2.logs=[];
+      c2.logs.push({id:Date.now(),who:who||'?대떦??,txt:txt,ts:getNow(),stage:SL[c2.st]});
+      document.getElementById('log-txt-in').value='';
+      saveLocal();render();renderLog(c2);toast('?대젰 異붽???,'ok');
+    }
+  });
+})();
+
+// ?대젰 紐⑤떖 ?ロ옄 ??sgLogCardId 珥덇린??closeLog=function(){
+  document.getElementById('ov-log').classList.remove('open');
+  logCardId=null;sgLogCardId=null;
+};
+
+// ?? 嫄댁쓽 ?묒? ?대낫?닿린 ??
+function sgExportXlsx(data, prefix, msg){
+  var headers=['?묒닔??,'ID','吏곸썝紐?,'?곸뾽?紐?,'移댄뀒怨좊━','?쒕ぉ','?곸꽭?댁슜','以묒슂??,'?④퀎','蹂닿???,'?대젰??];
+  var rows=data.map(function(c){
+    return [
+      c.created||'',
+      '#SG-'+String(c.id).padStart(4,'0'),
+      c.name||'?듬챸',c.dept||'',
+      SG_CAT_L[c.cat||'etc'].replace(/[^\w媛-??s]/g,'').trim(),
+      c.ti||'',c.ds||'',
+      SG_PRI_L[c.pri||'lo'].replace(/[^\w媛-??s]/g,'').trim(),
+      SG_ST_L[c.st||'new'],
+      c.archivedAt||'',
+      c.logs?c.logs.length:0
+    ];
+  });
+  var csv='\uFEFF'+[headers].concat(rows).map(function(r){return r.map(function(v){return '"'+String(v||'').replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
+  var a=document.createElement('a');
+  var now=new Date();
+  var allDatesS=data.map(function(c){return c.created||'';}).filter(Boolean).sort();
+  var todayS=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  var todayC=now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0');
+  var sfrom=allDatesS.length?allDatesS[0]:todayS;
+  var sto=allDatesS.length?allDatesS[allDatesS.length-1]:todayS;
+  var fn=prefix+todayC+'_'+sfrom+'~'+sto+'.csv';
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=fn;a.click();
+  toast(msg||'?뱫 ?묒? ??? '+fn,'ok');
+}
+document.getElementById('btnSgXlsx').addEventListener('click',function(){
+  var sgFiltered=sgGetDateFilteredCards();
+  var arcFiltered=sgArchived.filter(function(c){
+    if(!c.created)return true;
+    var cd=c.created.slice(0,10);
+    if(sgDateFilter.from&&cd<sgDateFilter.from)return false;
+    if(sgDateFilter.to&&cd>sgDateFilter.to)return false;
+    return true;
+  });
+  var allCards=sgFiltered.concat(arcFiltered);
+  allCards.sort(function(a,b){return (a.created||'').localeCompare(b.created||'');});
+  var msg='?뱫 ?묒?(CSV) ????꾨즺 (?쒖꽦 '+sgFiltered.length+'嫄?+ 蹂닿? '+arcFiltered.length+'嫄?';
+  sgExportXlsx(allCards,'?좏븳??嫄댁쓽_',msg);
+});
+document.getElementById('btnSgExport').addEventListener('click',function(){
+  var d={sgUid:sgUid,sgCards:sgCards,sgArchived:sgArchived};
+  var blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  var now=new Date();
+  a.href=URL.createObjectURL(blob);
+  a.download='kanban_sg_'+(now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0'))+'.json';
+  a.click();toast('?뮶 嫄댁쓽 ?곗씠??????꾨즺','ok');
+});
+
+// ?? 紐⑤뱶 ???꾪솚 ??
+document.querySelectorAll('.mtab').forEach(function(tab){
+  tab.addEventListener('click',function(){
+    curMode=tab.dataset.mode;
+    document.querySelectorAll('.mtab').forEach(function(t){t.classList.remove('on');});
+    tab.classList.add('on');
+    if(curMode==='cs'){
+      document.getElementById('board-cs').style.display='';
+      document.getElementById('board-sg').style.display='none';
+      document.getElementById('sb-cs').style.display='';
+      document.getElementById('sb-sg').style.display='none';
+      document.getElementById('nav').style.display='';
+      document.getElementById('hbtns-cs').style.display='';
+      document.getElementById('hbtns-sg').style.display='none';
+      rstats();
+    } else {
+      document.getElementById('board-cs').style.display='none';
+      document.getElementById('board-sg').style.display='';
+      document.getElementById('sb-cs').style.display='none';
+      document.getElementById('sb-sg').style.display='';
+      document.getElementById('nav').style.display='none';
+      document.getElementById('hbtns-cs').style.display='none';
+      document.getElementById('hbtns-sg').style.display='';
+      sgRender();sgUpdateArcCnt();sgStats();
+    }
+  });
+});
+
+// ?? 珥덇린????
+render();
+updateArcCnt();
+sgUpdateArcCnt();
+updateSbTime('sb-cs-update');
+updateSbTime('sb-sg-update');
+
+})();
+</script>
+
+</body>
+</html>
